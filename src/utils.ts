@@ -2,19 +2,19 @@ import type { CardRarity, RarityColors } from './types';
 
 export const getRarityColors = (rarity: CardRarity): RarityColors => {
   const rarityMap: Record<CardRarity, RarityColors> = {
-    common: {
+    casual: {
       border: 'border-gray-500',
       glowClass: 'card-glow-common'
     },
-    rare: {
+    'semi-competitive': {
       border: 'border-blue-500',
       glowClass: 'card-glow-rare'
     },
-    epic: {
+    rogue: {
       border: 'border-purple-500',
       glowClass: 'card-glow-epic'
     },
-    legendary: {
+    meta: {
       border: 'border-yellow-500',
       glowClass: 'card-glow-legendary'
     }

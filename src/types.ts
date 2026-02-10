@@ -6,7 +6,7 @@ export interface Decklist {
   title: string;    // Decklist title or variant name
   image: string;    // Path to decklist image (e.g., /decklist/archfiend.PNG)
 }
-export type CardRarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type CardRarity = 'casual' | 'semi-competitive' | 'rogue' | 'meta';
 
 export interface Card {
   id: number;
