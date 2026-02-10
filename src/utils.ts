@@ -30,3 +30,9 @@ export const formatNumber = (num: number): string => {
 export const capitalize = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1);
 };
+
+export function getImageUrl(path: string): string {
+  const base = import.meta.env.BASE_URL || '/';
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  return `${base}${cleanPath}`;
+}

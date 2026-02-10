@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Fantasy Card Gallery with TypeScript and Tailwind CSS",
   "main": "index.html",
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",

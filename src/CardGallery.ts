@@ -1,6 +1,7 @@
 import type { AppState, Card } from './types';
 import { cardsData, decklistsData } from './data';
 import { getRarityColors } from './utils';
+import { getImageUrl } from './utils';
 
 export class CardGallery {
   private state: AppState & { currentDuelist: string, page: 'gallery' | 'decklist', selectedCard?: Card };
@@ -326,7 +327,7 @@ export class CardGallery {
                   <div class="font-extrabold text-yellow-900 text-2xl mb-2 font-fantasy text-center drop-shadow">${deck.title}</div>
                   <div class="flex-1 flex items-center justify-center w-full h-full">
                     <div class="relative flex items-center justify-center w-full h-full bg-gradient-to-br from-yellow-200 via-yellow-100 to-yellow-300 rounded-xl border-2 border-yellow-400 shadow-md overflow-hidden aspect-[4/3]">
-                      <img src="${deck.image}" alt="${deck.title}" class="relative z-10 rounded-xl shadow-lg border border-yellow-500 bg-white object-contain w-full h-full max-w-full max-h-full" style="image-rendering:auto;" />
+                      <img src="${getImageUrl(deck.image)}" alt="${deck.title}" class="relative z-10 rounded-xl shadow-lg border border-yellow-500 bg-white object-contain w-full h-full max-w-full max-h-full" style="image-rendering:auto;" />
                     </div>
                   </div>
                 </div>
