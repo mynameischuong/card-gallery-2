@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   server: {
@@ -11,5 +12,6 @@ export default defineConfig({
     sourcemap: false,
     minify: 'terser'
   },
-  base: 'card-gallery-2'
+  base: 'card-gallery-2',
+  plugins: [react()],
 });
