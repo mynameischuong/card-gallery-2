@@ -11,5 +11,5 @@ export default defineConfig({
     sourcemap: false,
     minify: 'terser'
   },
-  base: 'card-gallery-2'
+  base: '/card-gallery-2/'
 });
