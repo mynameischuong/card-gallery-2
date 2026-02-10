@@ -1,14 +1,12 @@
 import type { Card, Decklist } from "./types";
-// Example decklist data. Add more as needed.
+
 export const decklistsData: Decklist[] = [
-  {
-    id: 1,
-    cardName: "Archfiend",
-    duelist: "Chuong",
-    title: "Archfiend Variant 1",
-    image: "/decklist/archfiend.PNG"
-  }
-  // Add more decklists here, e.g. for other cards, duelists, or variants
+  { id: 1, cardName: "Archfiend",  duelist: "Chuong", title: "Archfiend Variant 1", image: "/decklist/archfiend.PNG" },
+  { id: 2, cardName: "Phantasm Spiral",  duelist: "Chuong", title: "Phantasm Spiral Variant 1", image: "/decklist/phantasmSpiral.PNG" },
+  { id: 3, cardName: "Dark Magician",  duelist: "Chuong", title: "Dark Magician Variant 1", image: "/decklist/darkMagician.PNG" },
+  { id: 4, cardName: "Dark Magician",  duelist: "Chuong", title: "Dark Magician Variant 2", image: "/decklist/darkMagician2.PNG" },
+  { id: 5, cardName: "Eldlich",  duelist: "Chuong", title: "Eldlich Variant 1", image: "/decklist/eldlich.PNG" },
+  { id: 6, cardName: "Eldlich",  duelist: "Chuong", title: "Eldlich Variant 2", image: "/decklist/eldlich2.PNG" },
 ];
 
 export const cardsData: Card[] = [
