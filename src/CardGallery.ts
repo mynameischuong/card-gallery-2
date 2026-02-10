@@ -182,7 +182,7 @@ export class CardGallery {
           <div class="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-yellow-600/50"></div>
           
           <img 
-            src="${card.image}"
+            src="${getImageUrl(card.image)}"
             alt="${card.name}"
             class="max-w-full max-h-full object-contain p-1"
             loading="lazy"
