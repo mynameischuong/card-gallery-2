@@ -68,6 +68,15 @@
   .card-ornate-frame {
     position: relative;
   }
+
+  .card-name {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
   
   .card-ornate-frame::before,
   .card-ornate-frame::after {

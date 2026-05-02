@@ -1,15 +1,16 @@
-import type { AppState, Card } from './types';
+import type { AppState, Card, Decklist } from './types';
 import { cardsData, decklistsData } from './data';
 import { getRarityColors } from './utils';
 
 export class CardGallery {
-  private state: AppState & { currentDuelist: string, page: 'gallery' | 'decklist', selectedCard?: Card };
+  private state: AppState & { currentDuelist: string, page: 'gallery' | 'decklist', selectedCard?: Card, displayCards: Card[] };
   private appElement: HTMLElement;
 
   constructor(appElement: HTMLElement) {
     this.appElement = appElement;
     this.state = {
       cards: cardsData,
+      displayCards: cardsData,
       currentPage: 0,
       cardsPerPage: window.innerWidth < 768 ? 8 : 16,
       goldAmount: 1200,
@@ -36,10 +37,16 @@ export class CardGallery {
 
   // Filter by duelist if selected
   private getFilteredCards(): Card[] {
-    if (this.state.currentDuelist && this.state.currentDuelist !== 'All') {
-      return this.state.cards.filter(card => card.duelist === this.state.currentDuelist);
+    return this.state.displayCards;
+  }
+
+  private shuffleCards(cards: Card[]): Card[] {
+    const shuffled = [...cards];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-    return this.state.cards;
+    return shuffled;
   }
 
   private getCurrentPageCards(): Card[] {
@@ -50,7 +57,7 @@ export class CardGallery {
   }
 
   private getTotalPages(): number {
-    return Math.ceil(this.state.cards.length / this.state.cardsPerPage);
+    return Math.ceil(this.state.displayCards.length / this.state.cardsPerPage);
   }
 
   private createHeader(): string {
@@ -149,7 +156,7 @@ export class CardGallery {
 
     return `
       <div 
-          class="card card-ornate-frame relative aspect-[3/4] bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 rounded-2xl overflow-hidden border-4 border-yellow-600 shadow-xl transition-transform transition-shadow duration-200 cursor-pointer hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:z-10"
+          class="card card-ornate-frame relative aspect-[3/4] min-w-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 rounded-2xl overflow-hidden border-4 border-yellow-600 shadow-xl transition-transform transition-shadow duration-200 cursor-pointer hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:z-10"
         data-card-id="${card.id}"
       >
         ${cornerDecorations}
@@ -194,7 +201,7 @@ export class CardGallery {
             <!-- Decorative line above name -->
             <div class="h-0.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mb-1 opacity-60"></div>
             
-            <div class="card-name text-sm font-extrabold text-yellow-100 text-center font-fantasy tracking-wide drop-shadow-lg truncate text-glow-gold">
+            <div title="${card.name}" class="card-name flex items-center justify-center text-xs md:text-sm font-extrabold text-yellow-100 text-center font-fantasy tracking-wide drop-shadow-lg whitespace-normal break-words overflow-hidden w-full max-w-full text-glow-gold leading-tight min-h-[2.75rem]">
               ${card.name}
             </div>
             
@@ -261,6 +268,12 @@ export class CardGallery {
         const value = (e.target as HTMLSelectElement).value;
         this.state.currentDuelist = value;
         this.state.currentPage = 0;
+        if (value && value !== 'All') {
+          const filtered = this.state.cards.filter(card => card.duelist === value);
+          this.state.displayCards = this.shuffleCards(filtered);
+        } else {
+          this.state.displayCards = this.state.cards;
+        }
         this.render();
         this.attachEventListeners();
       });
@@ -310,28 +323,38 @@ export class CardGallery {
     this.attachEventListeners();
   }
 
+  private getRandomDecklist(card: Card): Decklist | undefined {
+    const matches = decklistsData.filter((d: Decklist) => d.cardName === card.name && d.duelist === card.duelist);
+    if (matches.length === 0) {
+      return undefined;
+    }
+    if (matches.length === 1) {
+      return matches[0];
+    }
+    const randomIndex = Math.floor(Math.random() * matches.length);
+    return matches[randomIndex];
+  }
+
   private createDecklistPage(card: Card): string {
-    const decklists = decklistsData.filter((d: any) => d.cardName === card.name && d.duelist === card.duelist);
+    const decklist = this.getRandomDecklist(card);
     return `
       <div class="gallery-container w-full max-w-6xl parchment-gradient rounded-[36px] p-10 shadow-[0_20px_80px_rgba(0,0,0,0.7)] border-8 border-yellow-900 mx-auto flex flex-col items-center relative overflow-hidden">
         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/old-mathematics.png')] opacity-10 pointer-events-none"></div>
         <button id="backToGallery" class="mb-8 px-8 py-3 bg-yellow-800 hover:bg-yellow-900 text-yellow-100 font-extrabold rounded-xl shadow-2xl border-2 border-yellow-400 transition text-xl z-10">← Back to Gallery</button>
         <div class="flex flex-col items-center gap-6 w-full z-10">
-          <div class="text-4xl md:text-5xl font-fantasy font-extrabold text-yellow-900 drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] tracking-wider text-center mb-2">${card.name}</div>
+          <div title="${card.name}" class="text-4xl md:text-5xl font-fantasy font-extrabold text-yellow-900 drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] tracking-wider text-center mb-2 break-words whitespace-normal leading-tight w-full max-w-full min-h-[5rem]">${card.name}</div>
           <div class="text-2xl font-fantasy font-bold text-yellow-700 mb-4">Duelist: <span class="text-yellow-900">${card.duelist}</span></div>
           <div class="flex flex-wrap gap-10 justify-center w-full">
-            ${decklists.length === 0 ? `<div class='text-yellow-900 text-2xl font-fantasy'>No decklists found for this deck.</div>` :
-              decklists.map((deck: any) => `
+            ${!decklist ? `<div class='text-yellow-900 text-2xl font-fantasy'>No decklist found for this deck.</div>` : `
                 <div class="decklist-card bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-100 rounded-2xl border-2 border-yellow-600 shadow-lg p-2 flex flex-col items-center w-full max-w-2xl mx-auto aspect-[4/3] relative">
-                  <div class="font-extrabold text-yellow-900 text-2xl mb-2 font-fantasy text-center drop-shadow">${deck.title}</div>
+                  <div class="font-extrabold text-yellow-900 text-2xl mb-2 font-fantasy text-center drop-shadow">${decklist.title}</div>
                   <div class="flex-1 flex items-center justify-center w-full h-full">
                     <div class="relative flex items-center justify-center w-full h-full bg-gradient-to-br from-yellow-200 via-yellow-100 to-yellow-300 rounded-xl border-2 border-yellow-400 shadow-md overflow-hidden aspect-[4/3]">
-                      <img src="${deck.image.startsWith('/') ? '.' + deck.image : deck.image}" alt="${deck.title}" class="relative z-10 rounded-xl shadow-lg border border-yellow-500 bg-white object-contain w-full h-full max-w-full max-h-full" style="image-rendering:auto;" />
+                      <img src="${decklist.image.startsWith('/') ? '.' + decklist.image : decklist.image}" alt="${decklist.title}" class="relative z-10 rounded-xl shadow-lg border border-yellow-500 bg-white object-contain w-full h-full max-w-full max-h-full" style="image-rendering:auto;" />
                     </div>
                   </div>
                 </div>
-              `).join('')
-            }
+              `}
           </div>
         </div>
       </div>

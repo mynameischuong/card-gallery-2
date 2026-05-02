@@ -15,6 +15,7 @@ export const cardsData: Card[] = [
   { id: 2, name: "White Forest", level: 8, rarity: "rogue", locked: false, image: "/cards/whiteForest.jpg", duelist: "An" },
   { id: 3, name: "Rescue-Ace", level: 7, rarity: "rogue", locked: false, image: "/cards/rescueAce.jpg", duelist: "An" },
   { id: 4, name: "Dracotail", level: 9, rarity: "meta", locked: false, image: "/cards/dracotail.jpg", duelist: "An" },
+  { id: 133 , name:"Artmage" , level: 8, rarity: "rogue", locked:false, image:"/cards/artmage.jpg", duelist: "An" },
 
   // Bao
   { id: 5, name: "Floowandereeze", level: 7, rarity: "rogue", locked: false, image: "/cards/floowandereeze.jpg", duelist: "Bao" },
@@ -23,6 +24,7 @@ export const cardsData: Card[] = [
   { id: 8, name: "k9", level: 9, rarity: "meta", locked: false, image: "/cards/k9-1.jpg", duelist: "Bao" },
   { id: 9, name: "Yummy", level: 8, rarity: "rogue", locked: false, image: "/cards/yummy-1.jpg", duelist: "Bao" },
   { id: 10, name: "Hecahands", level: 7, rarity: "semi-competitive", locked: false, image: "/cards/hecahands.jpg", duelist: "Bao" },
+  { id: 145, name: "Clown Clan", level: 8, rarity: "rogue", locked: false, image: "/cards/clownClan-1.jpg", duelist: "Bao" },
 
   // BaoCyberse
   { id: 11, name: "Salamangreat", level: 7, rarity: "rogue", locked: false, image: "/cards/salamangreat.jpg", duelist: "BaoCyberse" },
@@ -34,6 +36,7 @@ export const cardsData: Card[] = [
   { id: 17, name: "Goblin Biker", level: 7, rarity: "rogue", locked: false, image: "/cards/goblinBiker.jpg", duelist: "BaoCyberse" },
   { id: 18, name: "Ignister", level: 8, rarity: "rogue", locked: false, image: "/cards/ignister.jpg", duelist: "BaoCyberse" },
   { id: 19, name: "Evil Twin", level: 7, rarity: "rogue", locked: false, image: "/cards/evilTwin.jpg", duelist: "BaoCyberse" },
+  { id: 153, name: "Doom-z", level: 8, rarity: "rogue", locked: false, image: "/cards/doomz.jpg", duelist: "BaoCyberse" },
 
   // Ca
   { id: 20, name: "Labrynth", level: 7, rarity: "rogue", locked: false, image: "/cards/labrynth.jpg", duelist: "Ca" },
@@ -46,7 +49,7 @@ export const cardsData: Card[] = [
   { id: 25, name: "Archfiend", level: 7, rarity: "rogue", locked: false, image: "/cards/archfiend.jpg", duelist: "Chuong" },
   { id: 26, name: "Assault Mode", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/assaultMode.jpg", duelist: "Chuong" },
   { id: 27, name: "Buster Blader", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/busterBlader.jpg", duelist: "Chuong" },
-  { id: 28, name: "Dark Magician", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/darkMagician.jpg", duelist: "Chuong" },
+  { id: 28, name: "Dark Magician", level: 8, rarity: "rogue", locked: false, image: "/cards/darkMagician.jpg", duelist: "Chuong" },
   { id: 29, name: "Eldlich", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/eldlich.jpg", duelist: "Chuong" },
   { id: 30, name: "Evil Eye", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/evilEye.jpg", duelist: "Chuong" },
   { id: 31, name: "Fabled", level: 5, rarity: "semi-competitive", locked: false, image: "/cards/fabled.jpg", duelist: "Chuong" },
@@ -67,7 +70,7 @@ export const cardsData: Card[] = [
   { id: 46, name: "Mimighoul", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/mimighoul.jpg", duelist: "Chuong" },
   { id: 47, name: "Monarch", level: 7, rarity: "rogue", locked: false, image: "/cards/monarch.jpg", duelist: "Chuong" },
   { id: 48, name: "Morganite", level: 7, rarity: "rogue", locked: false, image: "/cards/morganite.jpg", duelist: "Chuong" },
-  { id: 49, name: "Nemleria", level: 7, rarity: "rogue", locked: false, image: "/cards/nemleria.png", duelist: "Chuong" },
+  { id: 49, name: "Nemleria", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/nemleria.png", duelist: "Chuong" },
   { id: 50, name: "Ninja", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/ninja.jpg", duelist: "Chuong" },
   { id: 51, name: "P.U.N.K", level: 7, rarity: "rogue", locked: false, image: "/cards/p.u.n.k.jpg", duelist: "Chuong" },
   { id: 52, name: "Phantasm Spiral", level: 7, rarity: "rogue", locked: false, image: "/cards/phantasmSpiral.jpg", duelist: "Chuong" },
@@ -84,8 +87,11 @@ export const cardsData: Card[] = [
   { id: 63, name: "Train", level: 7, rarity: "rogue", locked: false, image: "/cards/train.jpg", duelist: "Chuong" },
   { id: 64, name: "Tri-Brigade", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/tri-brigade.jpg", duelist: "Chuong" },
   { id: 65, name: "Weather Painter", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/weatherPainter.jpg", duelist: "Chuong" },
-  { id: 66, name: "Witchcrafter", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/witchcrafter.jpg", duelist: "Chuong" },
+  { id: 66, name: "Witchcrafter", level: 8, rarity: "rogue", locked: false, image: "/cards/witchcrafter.jpg", duelist: "Chuong" },
   { id: 67, name: "Magical Musketeer", level: 7, rarity: "rogue", locked: false, image: "/cards/magicalMusketeer.jpg", duelist: "Chuong" },
+  { id: 151, name: "Neos", level: 7, rarity: "rogue", locked: false, image: "/cards/neos.jpg", duelist: "Chuong" },
+  { id: 152, name: "Toon", level: 8, rarity: "rogue", locked: false, image: "/cards/toon.jpg", duelist: "Chuong" },
+  { id: 153, name: "Ritual of Light and Darkness", level: 8, rarity: "rogue", locked: false, image: "/cards/ritualOfLightAndDarkness.jpg", duelist: "Chuong" },
 
   // Du
   { id: 68, name: "Yummy", level: 8, rarity: "meta", locked: false, image: "/cards/yummy-2.jpg", duelist: "Du" },
@@ -99,9 +105,10 @@ export const cardsData: Card[] = [
   { id: 74, name: "Millennium", level: 7, rarity: "rogue", locked: false, image: "/cards/millennium.jpeg", duelist: "Duong" },
 
   // Duy
-  { id: 75, name: "Clown Clan", level: 9, rarity: "meta", locked: false, image: "/cards/clownClan.jpg", duelist: "Duy" },
+  { id: 75, name: "Crystron", level: 9, rarity: "meta", locked: false, image: "/cards/crystron-1.jpg", duelist: "Duy" },
   { id: 76, name: "Vanquish Soul", level: 9, rarity: "meta", locked: false, image: "/cards/vanquishSoul.jpg", duelist: "Duy" },
   { id: 77, name: "Dracotail", level: 9, rarity: "meta", locked: false, image: "/cards/dracotail.jpg", duelist: "Duy" },
+  { id: 146, name: "Junk", level: 9, rarity: "meta", locked: false, image: "/cards/junk.jpg", duelist: "Duy" },
 
   // Fake
   { id: 78, name: "Dracotail", level: 9, rarity: "meta", locked: false, image: "/cards/dracotailBranded.jpg", duelist: "Fake" },
@@ -124,7 +131,7 @@ export const cardsData: Card[] = [
   { id: 93, name: "Burning Abyss", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/burningAbyss.jpg", duelist: "Phuc" },
   { id: 94, name: "Infernoid", level: 7, rarity: "rogue", locked: false, image: "/cards/infernoid.jpg", duelist: "Phuc" },
   { id: 95, name: "Exosister", level: 7, rarity: "rogue", locked: false, image: "/cards/exosisters.jpg", duelist: "Phuc" },
-  { id: 96, name: "Phantom Knight", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/phantomKnight.jpg", duelist: "Phuc" },
+  { id: 96, name: "Phantom Knight", level: 8, rarity: "semi-competitive", locked: false, image: "/cards/phantomKnight.jpg", duelist: "Phuc" },
   { id: 97, name: "Altergeist", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/altergeist.png", duelist: "Phuc" },
   { id: 98, name: "Fire King", level: 8, rarity: "rogue", locked: false, image: "/cards/fireKing.jpg", duelist: "Phuc" },
 
@@ -141,7 +148,7 @@ export const cardsData: Card[] = [
   { id: 106, name: "Onomatopoeia", level: 7, rarity: "rogue", locked: false, image: "/cards/onomatopoeia.jpg", duelist: "Tam" },
   { id: 107, name: "Mitsurugi", level: 10, rarity: "meta", locked: false, image: "/cards/mitsurugi.jpg", duelist: "Tam" },
   { id: 108, name: "Megalith", level: 6, rarity: "semi-competitive", locked: false, image: "/cards/megalith-1.jpg", duelist: "Tam" },
-  { id: 109, name: "Doom-z", level: 7, rarity: "rogue", locked: false, image: "/cards/doomz.jpg", duelist: "Tam" },
+  { id: 109, name: "Doom-z", level: 8, rarity: "rogue", locked: false, image: "/cards/doomz.jpg", duelist: "Tam" },
   { id: 110, name: "Dark Lord", level: 8, rarity: "rogue", locked: false, image: "/cards/darklord.jpg", duelist: "Tam" },
   { id: 111, name: "Blue-eyes", level: 8, rarity: "rogue", locked: false, image: "/cards/blueEyes.jpg", duelist: "Tam" },
   { id: 112, name: "Raidraptor", level: 7, rarity: "rogue", locked: false, image: "/cards/raidraptor.jpg", duelist: "Tam" },
@@ -150,6 +157,7 @@ export const cardsData: Card[] = [
   // Thach
   { id: 114, name: "Rikka", level: 7, rarity: "rogue", locked: false, image: "/cards/rikka.jpg", duelist: "Thach" },
   { id: 115, name: "Rose Dragon", level: 7, rarity: "rogue", locked: false, image: "/cards/roseDragon.jpg", duelist: "Thach" },
+  { id: 150, name: "R.B.", level: 7, rarity: "rogue", locked: false, image: "/cards/R.B..jpg", duelist: "Thach" },
 
   // Thanh
   { id: 116, name: "Elfnote", level: 10, rarity: "meta", locked: false, image: "/cards/elfnote.jpg", duelist: "Thanh" },
@@ -169,11 +177,12 @@ export const cardsData: Card[] = [
   { id: 130, name: "Raidraptor", level: 7, rarity: "rogue", locked: false, image: "/cards/raidraptor.jpg", duelist:"Thanh" },
   { id :131 , name:"Apophis" , level :8 , rarity:"rogue" , locked:false , image:"/cards/apophis.jpg" , duelist:"Thanh"},
   { id :132 , name:"Doom Z" , level :8 , rarity:"rogue" , locked:false , image:"/cards/doomz.jpg" , duelist:"Thanh"},
-  { id :133 , name:"Artmage" , level :8 , rarity:"rogue" , locked:false , image:"/cards/artmage.jpg" , duelist:"Thanh"},
   { id :134 , name:"Orcust" , level :8 , rarity:"rogue" , locked:false , image:"/cards/orcust.jpg" , duelist:"Thanh"},
   { id :135 , name:"True Draco" , level :7 , rarity:"rogue" , locked:false , image:"/cards/trueDraco.png" , duelist:"Thanh"},
   { id: 136, name: "Fairy Tail", level: 9, rarity: "meta", locked: false, image: "/cards/fairyTail-1.jpg", duelist: "Thanh" },
   { id: 137, name: "Blue-eyes", level: 8, rarity: "rogue", locked: false, image: "/cards/blueEyes.jpg", duelist: "Thanh" },
+  { id: 148, name: "Predaplant", level: 7, rarity: "rogue", locked: false, image: "/cards/predaplant.jpg", duelist: "Thanh" },
+  { id: 149, name: "Ryzeal", level: 7, rarity: "rogue", locked: false, image: "/cards/ryzeal.jpg", duelist: "Thanh" },
 
   // Toan
   { id: 138, name: "Plunder Patrol", level: 7, rarity: "rogue", locked: false, image: "/cards/plunderPatrol.jpg", duelist: "Toan" },
@@ -183,6 +192,7 @@ export const cardsData: Card[] = [
   { id: 142, name: "Paleozoic", level: 7, rarity: "rogue", locked: false, image: "/cards/paleozoic.jpg", duelist: "Toan" },
   { id: 143, name: "Volcanic", level: 4, rarity: "casual", locked: false, image: "/cards/volcanic.jpg", duelist: "Toan" },
   { id: 144, name: "Ursarctic", level: 4, rarity: "casual", locked: false, image: "/cards/ursarctic.jpg", duelist:"Toan" },
+  { id: 147, name: "Fur Hire", level: 7, rarity: "rogue", locked: false, image: "/cards/furHire.jpg", duelist: "Toan" },
 
   // Chuong Choice - LOCKED CARDS (IDs 1001+)
   { id :1001 , name:"Amazoness" , level :4 , rarity:"casual" , locked:true , image:"/cards/amazoness.jpg" , duelist:"Chuong Choice"},
@@ -201,7 +211,6 @@ export const cardsData: Card[] = [
   { id: 1014, name: "Fortune Lady", level: 5, rarity: "semi-competitive", locked: true, image: "/cards/fortuneLady.jpg", duelist: "Chuong Choice" },
   { id: 1015, name: "Shinobird", level: 7, rarity: "rogue", locked: true, image: "/cards/shinobird.jpg", duelist: "Chuong Choice" },
   { id: 1016, name: "Penguin", level: 6, rarity: "semi-competitive", locked: true, image: "/cards/penguin.jpg", duelist: "Chuong Choice" },
-  { id: 1017, name: "Toon", level: 5, rarity: "semi-competitive", locked: true, image: "/cards/toon.jpg", duelist: "Chuong Choice" },
   { id: 1018, name: "Psy-frame", level: 6, rarity: "semi-competitive", locked: true, image: "/cards/psy-frame.jpg", duelist: "Chuong Choice" },
   { id: 1019, name: "Joker Knight", level: 5, rarity: "semi-competitive", locked: true, image: "/cards/jokerKnight.jpg", duelist: "Chuong Choice" },
   { id: 1020, name: "Performage", level: 6, rarity: "semi-competitive", locked: true, image: "/cards/performage.jpg", duelist: "Chuong Choice" },
