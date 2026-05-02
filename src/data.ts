@@ -105,10 +105,11 @@ export const cardsData: Card[] = [
   { id: 74, name: "Millennium", level: 7, rarity: "rogue", locked: false, image: "/cards/millennium.jpeg", duelist: "Duong" },
 
   // Duy
-  { id: 75, name: "Crystron", level: 9, rarity: "meta", locked: false, image: "/cards/crystron-1.jpg", duelist: "Duy" },
-  { id: 76, name: "Vanquish Soul", level: 9, rarity: "meta", locked: false, image: "/cards/vanquishSoul.jpg", duelist: "Duy" },
+  { id: 75, name: "Crystron K9", level: 9, rarity: "meta", locked: false, image: "/cards/crystron-1.jpg", duelist: "Duy" },
+  { id: 76, name: "Vanquish Soul K9", level: 9, rarity: "meta", locked: false, image: "/cards/vanquishSoul.jpg", duelist: "Duy" },
   { id: 77, name: "Dracotail", level: 9, rarity: "meta", locked: false, image: "/cards/dracotail.jpg", duelist: "Duy" },
-  { id: 146, name: "Junk", level: 9, rarity: "meta", locked: false, image: "/cards/junk.jpg", duelist: "Duy" },
+  { id: 146, name: "Junk", level: 8, rarity: "rogue", locked: false, image: "/cards/junk.jpg", duelist: "Duy" },
+  { id: 155, name: "Invoked", level: 8, rarity: "rogue", locked: false, image: "/cards/invoked.jpg", duelist: "Duy" },
 
   // Fake
   { id: 78, name: "Dracotail", level: 9, rarity: "meta", locked: false, image: "/cards/dracotailBranded.jpg", duelist: "Fake" },
