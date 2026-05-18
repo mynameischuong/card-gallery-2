@@ -57,7 +57,6 @@ export class ModeController {
             <select id="modeSelect" class="mb-4 w-full rounded-2xl border-2 border-yellow-500 bg-white px-4 py-2 text-yellow-900 font-bold outline-none focus:border-yellow-400">
               ${modes.map(mode => `<option value="${mode.id}" ${mode.id === currentModeId ? 'selected' : ''}>${mode.name}</option>`).join('')}
             </select>
-            <button type="button" id="copyModeLinkBtn" class="mb-4 inline-flex items-center justify-center gap-2 text-yellow-950 bg-emerald-200 hover:bg-emerald-300 px-3 py-2 rounded-2xl border-2 border-emerald-500 shadow-lg transition duration-200 ${!hasMode ? 'opacity-50 cursor-not-allowed' : ''}" ${!hasMode ? 'disabled' : ''}>🔗 Copy Share Link</button>
             ${actionButtons}
             <div class="text-sm text-yellow-200"><span class="font-bold">Rules:</span><br/>${rulesHtml}</div>
           </div>
@@ -70,7 +69,6 @@ export class ModeController {
 
   attachModeListeners(
     modes: GameMode[],
-    currentModeId: number,
     isDeveloper: boolean,
     onDeveloperLogin: () => void,
     onModeChange: (modeId: number) => void,
@@ -79,7 +77,6 @@ export class ModeController {
     onModeDelete: (modeId: number) => void,
     onModeEditStart: (modeId: number) => void,
     onModeCancelEdit: () => void,
-    onModeShare: (mode: GameMode) => void,
   ): void {
     const modeSelect = this.root.querySelector('#modeSelect') as HTMLSelectElement | null;
     if (modeSelect) {
@@ -162,14 +159,5 @@ export class ModeController {
       });
     }
 
-    const copyModeLinkBtn = this.root.querySelector('#copyModeLinkBtn') as HTMLButtonElement | null;
-    if (copyModeLinkBtn) {
-      copyModeLinkBtn.addEventListener('click', () => {
-        const currentMode = this.getCurrentMode(modes, currentModeId);
-        if (currentMode) {
-          onModeShare(currentMode);
-        }
-      });
-    }
   }
 }

@@ -2,7 +2,7 @@ import './style.css';
 import { CardGallery } from './CardGallery';
 
 // Initialize the app
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
   const appElement = document.getElementById('app');
   
   if (!appElement) {
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const gallery = new CardGallery(appElement);
-  gallery.init();
+  await gallery.init();
 
   console.log('🎮 Card Gallery initialized successfully!');
 });

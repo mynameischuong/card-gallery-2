@@ -60,33 +60,6 @@ export class CardGallery {
     return { ...sharedMode, id };
   }
 
-  private shareCurrentMode(): void {
-    const currentMode = this.state.modes.find(mode => mode.id === this.state.currentModeId);
-    if (!currentMode) {
-      window.alert('No game mode selected to share.');
-      return;
-    }
-
-    const url = new URL(window.location.href);
-    url.searchParams.set('sharedMode', JSON.stringify(currentMode));
-    const shareLink = url.toString();
-
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(shareLink)
-        .then(() => {
-          window.history.replaceState({}, '', shareLink);
-          window.alert('Share link copied to clipboard!');
-        })
-        .catch(() => {
-          window.history.replaceState({}, '', shareLink);
-          window.prompt('Copy this link to share the current mode:', shareLink);
-        });
-    } else {
-      window.history.replaceState({}, '', shareLink);
-      window.prompt('Copy this link to share the current mode:', shareLink);
-    }
-  }
-
   private loadDeveloperMode(): boolean {
     return localStorage.getItem('cardGalleryIsDeveloper') === 'true';
   }
@@ -150,20 +123,8 @@ export class CardGallery {
     this.modeController = new ModeController(appElement);
 
     const saved = this.loadSavedModes();
-    let initialModes = saved?.modes ?? modesData;
-    let initialModeId = saved?.currentModeId ?? initialModes[0]?.id ?? 0;
-
-    const sharedMode = this.getSharedModeFromUrl();
-    if (sharedMode) {
-      const existingMode = this.findMatchingMode(sharedMode, initialModes);
-      if (existingMode) {
-        initialModeId = existingMode.id;
-      } else {
-        const sharedModeWithId = this.getSharedModeWithUniqueId(sharedMode, initialModes);
-        initialModes = [...initialModes, sharedModeWithId];
-        initialModeId = sharedModeWithId.id;
-      }
-    }
+    const initialModes = saved?.modes ?? modesData;
+    const initialModeId = saved?.currentModeId ?? initialModes[0]?.id ?? 0;
 
     this.state = {
       cards: cardsData,
@@ -180,10 +141,6 @@ export class CardGallery {
       editingModeId: undefined,
       isDeveloper: this.loadDeveloperMode()
     };
-
-    if (sharedMode) {
-      this.saveModes();
-    }
     window.addEventListener('resize', () => {
       const newCardsPerPage = window.innerWidth < 768 ? 8 : 16;
       if (this.state.cardsPerPage !== newCardsPerPage) {
@@ -195,7 +152,43 @@ export class CardGallery {
     });
   }
 
-  init(): void {
+  private async loadModesFromJson(): Promise<GameMode[] | null> {
+    try {
+      const response = await fetch('modes.json');
+      if (!response.ok) {
+        return null;
+      }
+      const modes = await response.json();
+      return Array.isArray(modes) ? modes as GameMode[] : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async init(): Promise<void> {
+    const jsonModes = await this.loadModesFromJson();
+    const saved = this.loadSavedModes();
+    const effectiveModes = saved?.modes ?? jsonModes ?? modesData;
+    let effectiveModeId = saved?.currentModeId ?? effectiveModes[0]?.id ?? 0;
+
+    const sharedMode = this.getSharedModeFromUrl();
+    if (sharedMode) {
+      const existingMode = this.findMatchingMode(sharedMode, effectiveModes);
+      if (existingMode) {
+        effectiveModeId = existingMode.id;
+      } else {
+        const sharedModeWithId = this.getSharedModeWithUniqueId(sharedMode, effectiveModes);
+        effectiveModes.push(sharedModeWithId);
+        effectiveModeId = sharedModeWithId.id;
+      }
+      this.state.modes = effectiveModes;
+      this.state.currentModeId = effectiveModeId;
+      this.saveModes();
+    } else {
+      this.state.modes = effectiveModes;
+      this.state.currentModeId = effectiveModeId;
+    }
+
     this.render();
     this.attachEventListeners();
   }
@@ -463,7 +456,6 @@ export class CardGallery {
     if (this.state.page === 'modes') {
       this.modeController.attachModeListeners(
         this.state.modes,
-        this.state.currentModeId,
         this.state.isDeveloper,
         () => this.enableDeveloperMode(),
         (newModeId) => {
@@ -492,9 +484,6 @@ export class CardGallery {
         },
         () => {
           this.cancelEditingMode();
-        },
-        () => {
-          this.shareCurrentMode();
         },
       );
     }
