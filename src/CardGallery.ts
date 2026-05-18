@@ -1,15 +1,174 @@
-import type { AppState, Card, Decklist } from './types';
-import { cardsData, decklistsData } from './data';
+import type { AppState, Card, Decklist, GameMode } from './types';
+import { cardsData, decklistsData, modesData } from './data';
 import { getRarityColors } from './utils';
+import { ModeController } from './ModeController';
 
 export class CardGallery {
-  private state: AppState & { currentDuelist: string, page: 'gallery' | 'decklist', selectedCard?: Card, displayCards: Card[] };
+  private state: AppState & { currentDuelist: string, page: 'gallery' | 'decklist' | 'modes', selectedCard?: Card, displayCards: Card[], editingModeId?: number, isDeveloper: boolean };
   private appElement: HTMLElement;
+  private modeController: ModeController;
+
+  private loadSavedModes(): { modes: GameMode[]; currentModeId: number } | null {
+    try {
+      const savedModes = localStorage.getItem('cardGalleryModes');
+      const savedModeId = localStorage.getItem('cardGalleryCurrentModeId');
+      if (!savedModes) {
+        return null;
+      }
+
+      const parsedModes = JSON.parse(savedModes) as GameMode[];
+      const currentModeId = savedModeId ? parseInt(savedModeId, 10) : (parsedModes[0]?.id ?? 0);
+      return {
+        modes: Array.isArray(parsedModes) ? parsedModes : modesData,
+        currentModeId: Number.isNaN(currentModeId) ? parsedModes[0]?.id ?? 0 : currentModeId,
+      };
+    } catch {
+      return null;
+    }
+  }
+
+  private saveModes(): void {
+    try {
+      localStorage.setItem('cardGalleryModes', JSON.stringify(this.state.modes));
+      localStorage.setItem('cardGalleryCurrentModeId', String(this.state.currentModeId));
+    } catch {
+      // ignore storage failures silently
+    }
+  }
+
+  private getSharedModeFromUrl(): GameMode | undefined {
+    const params = new URLSearchParams(window.location.search);
+    const sharedModeParam = params.get('sharedMode');
+    if (!sharedModeParam) {
+      return undefined;
+    }
+
+    try {
+      return JSON.parse(sharedModeParam) as GameMode;
+    } catch {
+      return undefined;
+    }
+  }
+
+  private findMatchingMode(sharedMode: GameMode, modes: GameMode[]): GameMode | undefined {
+    return modes.find(mode => mode.name === sharedMode.name && mode.rules === sharedMode.rules);
+  }
+
+  private getSharedModeWithUniqueId(sharedMode: GameMode, modes: GameMode[]): GameMode {
+    const nextId = Math.max(0, ...modes.map(mode => mode.id)) + 1;
+    const id = modes.some(mode => mode.id === sharedMode.id) ? nextId : sharedMode.id;
+    return { ...sharedMode, id };
+  }
+
+  private shareCurrentMode(): void {
+    const currentMode = this.state.modes.find(mode => mode.id === this.state.currentModeId);
+    if (!currentMode) {
+      window.alert('No game mode selected to share.');
+      return;
+    }
+
+    const url = new URL(window.location.href);
+    url.searchParams.set('sharedMode', JSON.stringify(currentMode));
+    const shareLink = url.toString();
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(shareLink)
+        .then(() => {
+          window.history.replaceState({}, '', shareLink);
+          window.alert('Share link copied to clipboard!');
+        })
+        .catch(() => {
+          window.history.replaceState({}, '', shareLink);
+          window.prompt('Copy this link to share the current mode:', shareLink);
+        });
+    } else {
+      window.history.replaceState({}, '', shareLink);
+      window.prompt('Copy this link to share the current mode:', shareLink);
+    }
+  }
+
+  private loadDeveloperMode(): boolean {
+    return localStorage.getItem('cardGalleryIsDeveloper') === 'true';
+  }
+
+  private enableDeveloperMode(): void {
+    const code = window.prompt('Developer access code:');
+    if (!code) {
+      return;
+    }
+
+    const DEV_CODE = 'dev1234';
+    if (code.trim() === DEV_CODE) {
+      this.state.isDeveloper = true;
+      localStorage.setItem('cardGalleryIsDeveloper', 'true');
+      this.render();
+      this.attachEventListeners();
+      return;
+    }
+
+    window.alert('Invalid developer code.');
+  }
+
+  private startEditingMode(modeId: number): void {
+    this.state.editingModeId = modeId;
+    this.render();
+    this.attachEventListeners();
+  }
+
+  private cancelEditingMode(): void {
+    this.state.editingModeId = undefined;
+    this.render();
+    this.attachEventListeners();
+  }
+
+  private updateMode(updatedMode: GameMode): void {
+    this.state.modes = this.state.modes.map(mode => mode.id === updatedMode.id ? updatedMode : mode);
+    this.state.currentModeId = updatedMode.id;
+    this.state.editingModeId = undefined;
+    this.saveModes();
+    this.render();
+    this.attachEventListeners();
+  }
+
+  private deleteMode(modeId: number): void {
+    if (!window.confirm('Are you sure you want to delete this mode?')) {
+      return;
+    }
+
+    this.state.modes = this.state.modes.filter(mode => mode.id !== modeId);
+    if (this.state.currentModeId === modeId) {
+      this.state.currentModeId = this.state.modes[0]?.id ?? 0;
+    }
+    this.state.editingModeId = undefined;
+    this.saveModes();
+    this.render();
+    this.attachEventListeners();
+  }
 
   constructor(appElement: HTMLElement) {
     this.appElement = appElement;
+    this.modeController = new ModeController(appElement);
+
+    const saved = this.loadSavedModes();
+    let initialModes = saved?.modes ?? modesData;
+    let initialModeId = saved?.currentModeId ?? initialModes[0]?.id ?? 0;
+
+    const sharedMode = this.getSharedModeFromUrl();
+    if (sharedMode) {
+      const existingMode = this.findMatchingMode(sharedMode, initialModes);
+      if (existingMode) {
+        initialModeId = existingMode.id;
+      } else {
+        const sharedModeWithId = this.getSharedModeWithUniqueId(sharedMode, initialModes);
+        initialModes = [...initialModes, sharedModeWithId];
+        initialModeId = sharedModeWithId.id;
+      }
+    }
+
     this.state = {
       cards: cardsData,
+      modes: initialModes,
+      currentModeId: initialModeId,
       displayCards: cardsData,
       currentPage: 0,
       cardsPerPage: window.innerWidth < 768 ? 8 : 16,
@@ -17,8 +176,14 @@ export class CardGallery {
       gemAmount: 350,
       currentDuelist: 'All',
       page: 'gallery',
-      selectedCard: undefined
+      selectedCard: undefined,
+      editingModeId: undefined,
+      isDeveloper: this.loadDeveloperMode()
     };
+
+    if (sharedMode) {
+      this.saveModes();
+    }
     window.addEventListener('resize', () => {
       const newCardsPerPage = window.innerWidth < 768 ? 8 : 16;
       if (this.state.cardsPerPage !== newCardsPerPage) {
@@ -93,20 +258,23 @@ export class CardGallery {
           <span class="text-lg text-yellow-100 font-semibold tracking-wide font-fantasy drop-shadow-md">✨ Discover all decks by duelist ✨</span>
         </div>
         
-        <div class="flex flex-col md:flex-row gap-2 md:gap-6 items-center bg-gradient-to-br from-yellow-900/60 to-yellow-800/60 px-5 py-3 rounded-xl border-3 border-yellow-600 shadow-2xl backdrop-blur-sm relative z-10">
+        <div class="flex flex-col gap-3 bg-gradient-to-br from-yellow-900/60 to-yellow-800/60 px-5 py-3 rounded-xl border-3 border-yellow-600 shadow-2xl backdrop-blur-sm relative z-10 overflow-hidden">
           <!-- Inner glow -->
-          <div class="absolute inset-0 rounded-xl shadow-[inset_0_0_20px_rgba(255,215,0,0.2)]"></div>
+          <div class="absolute inset-0 rounded-xl shadow-[inset_0_0_20px_rgba(255,215,0,0.2)] pointer-events-none"></div>
           
           <div class="flex items-center gap-3 relative">
-            <label for="duelistFilter" class="font-bold text-yellow-100 text-lg font-fantasy drop-shadow-md">🎴 Duelist:</label>
-            <select id="duelistFilter" class="border-3 border-yellow-600 rounded-lg px-4 py-2 bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-900 font-bold font-fantasy focus:ring-2 focus:ring-yellow-400 transition shadow-lg cursor-pointer">
+            <label for="duelistFilter" class="inline-flex items-center gap-2 font-bold text-yellow-100 text-lg font-fantasy drop-shadow-md leading-none">🎴 <span>Duelist:</span></label>
+            <select id="duelistFilter" class="border-3 border-yellow-600 rounded-lg px-2 py-2 bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-900 font-bold font-fantasy focus:ring-2 focus:ring-yellow-400 transition shadow-lg cursor-pointer w-40">
               ${duelists.map(d => `<option value="${d}" ${d === this.state.currentDuelist ? 'selected' : ''}>${d}</option>`).join('')}
             </select>
           </div>
           
-          <div class="flex items-center gap-2 bg-gradient-to-br from-yellow-100 to-yellow-200 px-4 py-2 rounded-lg border-2 border-yellow-500 shadow-lg relative">
-            <span class="text-yellow-800 font-bold text-lg font-fantasy">📚 Total:</span>
-            <span class="text-yellow-900 font-extrabold text-2xl font-fantasy drop-shadow-sm">${totalDecks}</span>
+          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
+            <div class="flex items-center gap-2 bg-gradient-to-br from-yellow-100 to-yellow-200 px-2 py-2 rounded-lg border-2 border-yellow-500 shadow-lg relative w-40">
+              <span class="inline-flex items-center gap-2 text-yellow-800 font-bold text-lg font-fantasy leading-none">📚 <span>Total:</span></span>
+              <span class="text-yellow-900 font-extrabold text-2xl font-fantasy drop-shadow-sm leading-none">${totalDecks}</span>
+            </div>
+            <button id="openModePageBtn" class="inline-flex items-center justify-center gap-2 text-yellow-900 font-bold bg-yellow-200 hover:bg-yellow-300 px-2 py-2 rounded-2xl border-2 border-yellow-500 shadow-lg transition duration-200 whitespace-nowrap flex-shrink-0 min-w-[140px]">🎮 <span>Mode Page</span></button>
           </div>
         </div>
         
@@ -255,6 +423,19 @@ export class CardGallery {
           </div>
         </div>
       `;
+    } else if (this.state.page === 'modes') {
+      this.appElement.innerHTML = `
+        <div class="gallery-container w-full max-w-6xl wood-texture rounded-[30px] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] border-8 border-wood-dark mx-auto">
+          <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
+            <div>
+              <div class="text-4xl font-extrabold text-yellow-200 font-fantasy">Game Modes</div>
+              <div class="text-yellow-100 text-sm mt-2">Manage your mode rules and tournament settings on a separate page.</div>
+            </div>
+            <button id="backToGallery" class="text-yellow-950 bg-yellow-300 hover:bg-yellow-400 font-bold rounded-2xl px-5 py-3 shadow-lg transition">← Back to Gallery</button>
+          </div>
+          ${this.modeController.renderModePanel(this.state.modes, this.state.currentModeId, this.state.editingModeId, this.state.isDeveloper)}
+        </div>
+      `;
     } else if (this.state.page === 'decklist' && this.state.selectedCard) {
       this.appElement.innerHTML = this.createDecklistPage(this.state.selectedCard);
     }
@@ -279,6 +460,52 @@ export class CardGallery {
       });
     }
 
+    if (this.state.page === 'modes') {
+      this.modeController.attachModeListeners(
+        this.state.modes,
+        this.state.currentModeId,
+        this.state.isDeveloper,
+        () => this.enableDeveloperMode(),
+        (newModeId) => {
+          this.state.currentModeId = newModeId;
+          this.state.editingModeId = undefined;
+          this.saveModes();
+          this.render();
+          this.attachEventListeners();
+        },
+        (createdMode) => {
+          this.state.modes = [...this.state.modes, createdMode];
+          this.state.currentModeId = createdMode.id;
+          this.state.editingModeId = undefined;
+          this.saveModes();
+          this.render();
+          this.attachEventListeners();
+        },
+        (updatedMode) => {
+          this.updateMode(updatedMode);
+        },
+        (modeId) => {
+          this.deleteMode(modeId);
+        },
+        (modeId) => {
+          this.startEditingMode(modeId);
+        },
+        () => {
+          this.cancelEditingMode();
+        },
+        () => {
+          this.shareCurrentMode();
+        },
+      );
+    }
+
+    const openModePageBtn = this.appElement.querySelector('#openModePageBtn');
+    openModePageBtn?.addEventListener('click', () => {
+      this.state.page = 'modes';
+      this.render();
+      this.attachEventListeners();
+    });
+
     // Card click events (only in gallery page)
     if (this.state.page === 'gallery') {
       const cards = this.appElement.querySelectorAll('.card');
@@ -290,11 +517,10 @@ export class CardGallery {
         });
       });
     }
-    // Back to gallery button (only in decklist page)
-    if (this.state.page === 'decklist') {
-      const backBtn = this.appElement.querySelector('#backToGallery');
-      backBtn?.addEventListener('click', () => this.handleBackToGallery());
-    }
+
+    // Back to gallery button in decklist or modes page
+    const backBtn = this.appElement.querySelector('#backToGallery');
+    backBtn?.addEventListener('click', () => this.handleBackToGallery());
 
     // Pagination buttons
     const prevBtn = this.appElement.querySelector('#prevBtn');

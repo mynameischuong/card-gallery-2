@@ -1,12 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Noto+Serif:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   body {
-    font-family: 'Cinzel', serif;
+    font-family: 'Noto Serif', 'Cinzel', Georgia, serif;
     background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     min-height: 100vh;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font-family: 'Noto Serif', 'Cinzel', Georgia, serif;
+  }
+
+  .font-fantasy {
+    font-family: 'Noto Serif', 'Cinzel', Georgia, serif;
   }
 }
 

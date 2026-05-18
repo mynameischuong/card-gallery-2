@@ -6,6 +6,15 @@ export interface Decklist {
   title: string;    // Decklist title or variant name
   image: string;    // Path to decklist image (e.g., /decklist/archfiend.PNG)
 }
+
+export interface GameMode {
+  id: number;
+  name: string;
+  description: string;
+  rules: string;
+  //image: string;
+}
+
 export type CardRarity = 'casual' | 'semi-competitive' | 'rogue' | 'meta';
 
 export interface Card {
@@ -20,6 +29,8 @@ export interface Card {
 
 export interface AppState {
   cards: Card[];
+  modes: GameMode[];
+  currentModeId: number;
   currentPage: number;
   cardsPerPage: number;
   goldAmount: number;
