@@ -4,7 +4,7 @@ import { getRarityColors } from './utils';
 import { ModeController } from './ModeController';
 
 export class CardGallery {
-  private state: AppState & { currentDuelist: string, page: 'gallery' | 'decklist' | 'modes', selectedCard?: Card, displayCards: Card[], editingModeId?: number, isDeveloper: boolean };
+  private state: AppState & { currentDuelist: string, page: 'gallery' | 'decklist' | 'modes', selectedCard?: Card, selectedDecklistId?: number, displayCards: Card[], editingModeId?: number, isDeveloper: boolean, noDeckSelected: boolean };
   private appElement: HTMLElement;
   private modeController: ModeController;
 
@@ -132,19 +132,20 @@ export class CardGallery {
       currentModeId: initialModeId,
       displayCards: cardsData,
       currentPage: 0,
-      cardsPerPage: window.innerWidth < 768 ? 8 : 16,
+      cardsPerPage: 12,
       goldAmount: 1200,
       gemAmount: 350,
       currentDuelist: 'All',
       page: 'gallery',
       selectedCard: undefined,
       editingModeId: undefined,
-      isDeveloper: this.loadDeveloperMode()
+      isDeveloper: this.loadDeveloperMode(),
+      noDeckSelected: true,
     };
+    
     window.addEventListener('resize', () => {
-      const newCardsPerPage = window.innerWidth < 768 ? 8 : 16;
-      if (this.state.cardsPerPage !== newCardsPerPage) {
-        this.state.cardsPerPage = newCardsPerPage;
+      if (this.state.cardsPerPage !== 12) {
+        this.state.cardsPerPage = 12;
         this.state.currentPage = 0;
         this.render();
         this.attachEventListeners();
@@ -219,9 +220,6 @@ export class CardGallery {
   }
 
   private createHeader(): string {
-    const duelists = Array.from(new Set(this.state.cards.map(card => card.duelist)));
-    duelists.unshift('All');
-    // Calculate total decks for the selected duelist
     let totalDecks = 0;
     if (this.state.currentDuelist && this.state.currentDuelist !== 'All') {
       totalDecks = this.state.cards.filter(card => card.duelist === this.state.currentDuelist).length;
@@ -229,50 +227,61 @@ export class CardGallery {
       totalDecks = this.state.cards.length;
     }
     return `
-      <div class="rounded-t-3xl p-6 flex flex-col md:flex-row justify-between items-center border-4 border-yellow-700 mb-6 shadow-2xl bg-gradient-to-br from-yellow-900/40 via-yellow-800/30 to-yellow-900/40 backdrop-blur-sm relative overflow-hidden">
-        <!-- Decorative top border -->
-        <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-60"></div>
-        
-        <!-- Ornate corner decorations -->
-        <div class="absolute top-2 left-2 w-8 h-8 border-l-4 border-t-4 border-yellow-400/50 rounded-tl-lg"></div>
-        <div class="absolute top-2 right-2 w-8 h-8 border-r-4 border-t-4 border-yellow-400/50 rounded-tr-lg"></div>
-        
-        <!-- Background pattern overlay -->
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/old-mathematics.png')] opacity-10"></div>
-        
-        <div class="gallery-title flex flex-col items-center md:items-start gap-2 relative z-10">
-          <div class="flex items-center gap-3">
-            <!-- Decorative gem icon -->
-            <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg border-2 border-yellow-700 shadow-lg flex items-center justify-center rotate-45">
-              <div class="text-2xl -rotate-45">⚜️</div>
-            </div>
-            <span class="text-4xl md:text-5xl font-extrabold bg-gradient-to-r from-yellow-200 via-yellow-400 to-yellow-200 bg-clip-text text-transparent drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] font-fantasy tracking-wider">Card Gallery</span>
-          </div>
-          <span class="text-lg text-yellow-100 font-semibold tracking-wide font-fantasy drop-shadow-md">✨ Discover all decks by duelist ✨</span>
+      <div class="mb-3" style="position:relative;border-radius:16px;overflow:visible;border:3px solid #6b4a20;box-shadow:0 6px 24px rgba(0,0,0,0.7),inset 0 1px 0 rgba(255,210,100,0.15);background:linear-gradient(160deg,#1e1208 0%,#2e1c0a 30%,#3a2410 50%,#2e1c0a 70%,#1e1208 100%);">
+        <!-- clip inner content but not the icon -->
+        <div style="position:absolute;inset:0;border-radius:14px;overflow:hidden;pointer-events:none;">
+          <!-- Subtle inner wood grain lines -->
+          <div style="position:absolute;inset:0;background:repeating-linear-gradient(92deg,transparent 0px,transparent 18px,rgba(255,180,60,0.03) 18px,rgba(255,180,60,0.03) 19px);pointer-events:none;"></div>
+          <!-- Top gold edge highlight -->
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,rgba(220,170,60,0.6),rgba(255,210,100,0.9),rgba(220,170,60,0.6),transparent);pointer-events:none;"></div>
+          <!-- Bottom gold edge -->
+          <div style="position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(to right,transparent,rgba(180,130,40,0.5),rgba(220,170,60,0.7),rgba(180,130,40,0.5),transparent);pointer-events:none;"></div>
         </div>
-        
-        <div class="flex flex-col gap-3 bg-gradient-to-br from-yellow-900/60 to-yellow-800/60 px-5 py-3 rounded-xl border-3 border-yellow-600 shadow-2xl backdrop-blur-sm relative z-10 overflow-hidden">
-          <!-- Inner glow -->
-          <div class="absolute inset-0 rounded-xl shadow-[inset_0_0_20px_rgba(255,215,0,0.2)] pointer-events-none"></div>
-          
-          <div class="flex items-center gap-3 relative">
-            <label for="duelistFilter" class="inline-flex items-center gap-2 font-bold text-yellow-100 text-lg font-fantasy drop-shadow-md leading-none">🎴 <span>Duelist:</span></label>
-            <select id="duelistFilter" class="border-3 border-yellow-600 rounded-lg px-2 py-2 bg-gradient-to-br from-yellow-50 to-yellow-100 text-yellow-900 font-bold font-fantasy focus:ring-2 focus:ring-yellow-400 transition shadow-lg cursor-pointer w-40">
-              ${duelists.map(d => `<option value="${d}" ${d === this.state.currentDuelist ? 'selected' : ''}>${d}</option>`).join('')}
-            </select>
+        <!-- Corner ornaments -->
+        <div style="position:absolute;top:6px;left:8px;width:20px;height:20px;border-top:2px solid rgba(200,160,60,0.7);border-left:2px solid rgba(200,160,60,0.7);border-radius:3px 0 0 0;pointer-events:none;z-index:2;"></div>
+        <div style="position:absolute;top:6px;right:8px;width:20px;height:20px;border-top:2px solid rgba(200,160,60,0.7);border-right:2px solid rgba(200,160,60,0.7);border-radius:0 3px 0 0;pointer-events:none;z-index:2;"></div>
+        <div style="position:absolute;bottom:6px;left:8px;width:20px;height:20px;border-bottom:2px solid rgba(200,160,60,0.7);border-left:2px solid rgba(200,160,60,0.7);border-radius:0 0 0 3px;pointer-events:none;z-index:2;"></div>
+        <div style="position:absolute;bottom:6px;right:8px;width:20px;height:20px;border-bottom:2px solid rgba(200,160,60,0.7);border-right:2px solid rgba(200,160,60,0.7);border-radius:0 0 3px 0;pointer-events:none;z-index:2;"></div>
+
+        <div style="position:relative;display:flex;align-items:center;padding:10px 20px;gap:16px;min-height:80px;">
+
+          <!-- LEFT: Title -->
+          <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
+            <div style="font-family:'Cinzel',Georgia,serif;font-size:clamp(1.3rem,2.5vw,2rem);font-weight:900;color:#f0d898;letter-spacing:0.12em;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,0.8),0 0 20px rgba(200,150,40,0.3);">CARD GALLERY</div>
+            <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.6rem;color:rgba(200,165,80,0.8);letter-spacing:0.22em;text-transform:uppercase;margin-top:5px;">Quest Board for Legendary Decks</div>
+            <div style="margin-top:5px;height:1px;width:70%;background:linear-gradient(to right,rgba(180,130,40,0.6),transparent);"></div>
           </div>
-          
-          <div class="flex flex-col sm:flex-row items-center justify-between gap-3 w-full">
-            <div class="flex items-center gap-2 bg-gradient-to-br from-yellow-100 to-yellow-200 px-2 py-2 rounded-lg border-2 border-yellow-500 shadow-lg relative w-40">
-              <span class="inline-flex items-center gap-2 text-yellow-800 font-bold text-lg font-fantasy leading-none">📚 <span>Total:</span></span>
-              <span class="text-yellow-900 font-extrabold text-2xl font-fantasy drop-shadow-sm leading-none">${totalDecks}</span>
+
+          <!-- CENTER: icon.png shield emblem - overflows header vertically -->
+          <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:visible;margin:-16px 0;">
+            <img src="./style/icon.png" alt="Emblem"
+              style="width:120px;height:120px;object-fit:contain;mix-blend-mode:lighten;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.8));position:relative;z-index:10;"/>
+          </div>
+
+          <!-- RIGHT: DECKS counter + TACTICIAN button -->
+          <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:10px;">
+
+            <!-- DECKS box -->
+            <div style="background:linear-gradient(145deg,#1a0e04,#2e1c08);border:2px solid #8a6828;border-radius:10px;padding:6px 14px 8px;text-align:center;min-width:80px;box-shadow:0 4px 14px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,200,80,0.1);">
+              <div style="font-family:'Cinzel',Georgia,serif;font-size:0.5rem;font-weight:700;color:#a88840;text-transform:uppercase;letter-spacing:0.28em;margin-bottom:2px;">Decks</div>
+              <div style="font-family:'Cinzel',Georgia,serif;font-size:2rem;font-weight:900;color:#f0d898;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,0.7);">${totalDecks}</div>
             </div>
-            <button id="openModePageBtn" class="inline-flex items-center justify-center gap-2 text-yellow-900 font-bold bg-yellow-200 hover:bg-yellow-300 px-2 py-2 rounded-2xl border-2 border-yellow-500 shadow-lg transition duration-200 whitespace-nowrap flex-shrink-0 min-w-[140px]">🎮 <span>Mode Page</span></button>
+
+            <!-- TACTICIAN'S VIEW button -->
+            <button id="openModePageBtn"
+              style="background:linear-gradient(145deg,#1a0e04,#2e1c08);border:2px solid #8a6828;border-radius:10px;padding:8px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 4px 14px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,200,80,0.1);transition:all 0.2s;outline:none;min-width:80px;"
+              onmouseover="this.style.background='linear-gradient(145deg,#2e1c08,#4a2c10)';this.style.borderColor='#c9932a';"
+              onmouseout="this.style.background='linear-gradient(145deg,#1a0e04,#2e1c08)';this.style.borderColor='#8a6828';">
+              <div style="position:relative;width:30px;height:30px;display:flex;align-items:center;justify-content:center;">
+                <div style="position:absolute;width:24px;height:2.5px;background:linear-gradient(to right,#8a6828,#d4a84a,#8a6828);border-radius:2px;transform:rotate(45deg);"></div>
+                <div style="position:absolute;width:24px;height:2.5px;background:linear-gradient(to right,#8a6828,#d4a84a,#8a6828);border-radius:2px;transform:rotate(-45deg);"></div>
+                <div style="width:11px;height:11px;border-radius:50%;background:linear-gradient(135deg,#c9932a,#8B6914);border:2px solid #5a3d15;position:relative;z-index:1;"></div>
+              </div>
+              <div style="font-family:'Cinzel',Georgia,serif;font-size:0.48rem;font-weight:700;color:#a88840;text-transform:uppercase;letter-spacing:0.13em;white-space:nowrap;">Tactician's View</div>
+            </button>
+
           </div>
         </div>
-        
-        <!-- Decorative bottom border -->
-        <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-yellow-400 to-transparent opacity-60"></div>
       </div>
     `;
   }
@@ -286,13 +295,35 @@ export class CardGallery {
 
   private createCardsGrid(): string {
     const cards = this.getCurrentPageCards();
+    const duelists = Array.from(new Set(this.state.cards.map(card => card.duelist)));
+
+    // Show empty/welcome state when no guild has been selected yet
+    if (this.state.noDeckSelected) {
+      return `
+        <div class="quest-board rounded-2xl border-4 border-wood-dark shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)]"
+          style="display:flex;flex-direction:column;flex:1;min-height:0;padding:10px 10px 8px;background:linear-gradient(145deg,#12100a,#1c170d);">
+          ${this.createEmptyState()}
+          ${this.createBottomControls(true)}
+        </div>
+      `;
+    }
     
     return `
-      <div class="cards-area flex-1 bg-gradient-to-br from-wood-medium to-[#5a483a] rounded-2xl p-5 border-4 border-wood-dark shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)]">
-        ${this.createBottomControls()}
-        <div class="cards-grid grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+      <div class="quest-board rounded-2xl border-4 border-wood-dark shadow-[inset_0_4px_10px_rgba(0,0,0,0.5)]"
+        style="display:flex;flex-direction:column;flex:1;min-height:0;padding:10px 10px 8px;">
+        <!-- Filter row above cards -->
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-shrink:0;">
+          <span style="font-family:'Cinzel',Georgia,serif;font-size:0.6rem;font-weight:700;color:#c9aa71;text-transform:uppercase;letter-spacing:0.18em;">⚔ Guild</span>
+          <select id="duelistFilter" style="background:linear-gradient(135deg,#2a1a06,#3d2810);color:#f0d898;border:2px solid #7d5b35;border-radius:8px;padding:3px 8px;font-family:'Cinzel',Georgia,serif;font-size:0.68rem;cursor:pointer;outline:none;max-width:200px;">
+            ${duelists.map(d => `<option value="${d}" style="background:#2a1a06;color:#f0d898;" ${d === this.state.currentDuelist ? 'selected' : ''}>${d}</option>`).join('')}
+          </select>
+        </div>
+        <!-- Cards grid: 6 columns × 2 rows, fills available space -->
+        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,1fr);gap:8px;flex:1;min-height:0;">
           ${cards.map(card => this.createCard(card)).join('')}
         </div>
+        <!-- Bottom nav bar: always visible, never clipped -->
+        ${this.createBottomControls()}
       </div>
     `;
   }
@@ -300,106 +331,275 @@ export class CardGallery {
   private createCard(card: Card): string {
     const { glowClass } = getRarityColors(card.rarity);
     const lockOverlay = card.locked ? `
-      <div class="absolute inset-0 bg-black/70 flex items-center justify-center rounded-xl z-10">
-        <span class="text-5xl">🔒</span>
+      <div class="absolute inset-0 bg-black/70 flex items-center justify-center z-10" style="border-radius:10px 10px 0 0;">
+        <span style="font-size:2rem;">🔒</span>
       </div>
     ` : '';
 
-    // Ornate corner decorations
-    const cornerDecorations = `
-      <div class="card-corners">
-        <div class="card-corner top-left"></div>
-        <div class="card-corner top-right"></div>
-        <div class="card-corner bottom-left"></div>
-        <div class="card-corner bottom-right"></div>
-      </div>
-    `;
+    const tagLabel = card.rarity || '';
+    const tagBg = (() => {
+      const t = tagLabel.toLowerCase();
+      if (t === 'meta') return 'linear-gradient(135deg,#1a5fa8,#2478cc)';
+      if (t === 'semi-competitive') return 'linear-gradient(135deg,#a06010,#c87a18)';
+      if (t === 'competitive') return 'linear-gradient(135deg,#8a1a1a,#b82828)';
+      if (t === 'casual') return 'linear-gradient(135deg,#555,#777)';
+      return 'linear-gradient(135deg,#2a7a3a,#389448)'; // rogue
+    })();
 
     return `
       <div 
-          class="card card-ornate-frame relative aspect-[3/4] min-w-0 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 rounded-2xl overflow-hidden border-4 border-yellow-600 shadow-xl transition-transform transition-shadow duration-200 cursor-pointer hover:-translate-y-1 hover:scale-105 hover:shadow-lg hover:z-10"
+        class="card cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:z-10 ${glowClass}"
         data-card-id="${card.id}"
+        style="display:flex;flex-direction:column;height:100%;border-radius:12px;border:3px solid #7a5a2a;background:#1a1008;box-shadow:0 4px 16px rgba(0,0,0,0.55);overflow:hidden;"
       >
-        ${cornerDecorations}
-        
-        <!-- Inner decorative border -->
-        <div class="absolute inset-2 border-2 border-yellow-500/30 rounded-xl pointer-events-none"></div>
-        
-        <!-- Glow effect overlay -->
-        <div class="absolute inset-0 rounded-xl ${glowClass} pointer-events-none"></div>
-        
-        <!-- Card level badge with ornate styling -->
-        <div class="card-level absolute top-3 left-3 bg-gradient-to-br from-yellow-700 to-yellow-900 rounded-full w-10 h-10 flex items-center justify-center font-extrabold text-yellow-100 text-lg border-3 border-yellow-400 z-20 font-fantasy shadow-[0_4px_10px_rgba(0,0,0,0.6),inset_0_2px_4px_rgba(255,215,0,0.3)]">
-          ${card.level}
-        </div>
-        
-        <!-- Rarity indicator -->
-        <div class="absolute top-3 right-3 z-20">
-          <div class="bg-gradient-to-br from-yellow-700 to-yellow-900 rounded-full px-3 py-1 border-2 border-yellow-400 shadow-lg">
-            <span class="text-xs font-bold text-yellow-100 uppercase tracking-wider">${card.rarity}</span>
+        <!-- Image area -->
+        <div style="position:relative;flex:1;min-height:0;overflow:hidden;background:linear-gradient(160deg,#2c1d0e,#1a1008);">
+
+          <!-- Level badge – top-left gold circle -->
+          <div style="position:absolute;top:5px;left:5px;z-index:20;width:26px;height:26px;background:linear-gradient(135deg,#c9932a,#8B6914);border:2px solid #3d2510;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',Georgia,serif;font-size:0.72rem;font-weight:900;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.6);">
+            ${card.level}
           </div>
-        </div>
-        
-        <!-- Image container with inner frame -->
-        <div class="absolute inset-0 top-12 bottom-16 mx-3 bg-gradient-to-br from-slate-200 to-slate-300 rounded-lg border-4 border-yellow-700/40 shadow-[inset_0_2px_8px_rgba(0,0,0,0.3)] flex items-center justify-center overflow-hidden">
-          <!-- Decorative inner corners -->
-          <div class="absolute top-1 left-1 w-3 h-3 border-l-2 border-t-2 border-yellow-600/50"></div>
-          <div class="absolute top-1 right-1 w-3 h-3 border-r-2 border-t-2 border-yellow-600/50"></div>
-          <div class="absolute bottom-1 left-1 w-3 h-3 border-l-2 border-b-2 border-yellow-600/50"></div>
-          <div class="absolute bottom-1 right-1 w-3 h-3 border-r-2 border-b-2 border-yellow-600/50"></div>
-          
+
+          <!-- Tag badge – top-right (rarity), colour-coded -->
+          ${tagLabel ? `
+          <div style="position:absolute;top:5px;right:5px;z-index:20;background:${tagBg};border:1.5px solid rgba(0,0,0,0.35);border-radius:5px;padding:3px 6px;box-shadow:0 2px 6px rgba(0,0,0,0.5);">
+            <span style="font-family:'Cinzel',Georgia,serif;font-size:0.52rem;color:#fff;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;white-space:nowrap;line-height:1;">${tagLabel.replace(/-/g, ' ')}</span>
+          </div>
+          ` : ''}
+
+          <!-- Card image -->
           <img 
             src="${card.image.startsWith('/') ? '.' + card.image : card.image}"
             alt="${card.name}"
-            class="max-w-full max-h-full object-contain p-1"
+            style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center top;display:block;z-index:0;"
             loading="lazy"
           />
+
+          ${lockOverlay}
         </div>
-        
-        <!-- Card name plate with ornate styling -->
-        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-yellow-900 via-yellow-800 to-transparent p-3 rounded-b-xl">
-          <div class="bg-gradient-to-r from-yellow-900/80 via-yellow-800/90 to-yellow-900/80 rounded-lg border-2 border-yellow-600 shadow-lg px-2 py-2">
-            <!-- Decorative line above name -->
-            <div class="h-0.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mb-1 opacity-60"></div>
-            
-            <div title="${card.name}" class="card-name flex items-center justify-center text-xs md:text-sm font-extrabold text-yellow-100 text-center font-fantasy tracking-wide drop-shadow-lg whitespace-normal break-words overflow-hidden w-full max-w-full text-glow-gold leading-tight min-h-[2.75rem]">
-              ${card.name}
-            </div>
-            
-            <!-- Decorative line below name -->
-            <div class="h-0.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mt-1 opacity-60"></div>
+
+        <!-- Name strip: parchment below image -->
+        <div style="flex-shrink:0;background:linear-gradient(180deg,#f0e0a0 0%,#c8942a 100%);border-top:2px solid #7a5a2a;padding:6px 8px 7px;display:flex;align-items:center;justify-content:center;min-height:38px;box-shadow:inset 0 2px 6px rgba(0,0,0,0.15);">
+          <div title="${card.name}" style="font-family:'Cinzel','Noto Serif',Georgia,serif;font-size:0.72rem;font-weight:700;color:#1e0a00;text-align:center;line-height:1.25;letter-spacing:0.04em;width:100%;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-shadow:0 1px 1px rgba(255,220,120,0.4);">
+            ${card.name}
           </div>
         </div>
-        
-        ${lockOverlay}
       </div>
     `;
   }
 
-  private createBottomControls(): string {
+  private createEmptyState(): string {
+    const duelists = Array.from(new Set(this.state.cards.map(card => card.duelist)));
+    return `
+      <div style="display:flex;flex:1;min-height:0;gap:16px;padding:6px 4px;">
+
+        <!-- LEFT SIDEBAR: scroll icon + player deck panel with guild selector -->
+        <div style="width:190px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;">
+
+          <!-- Decorative icon -->
+          <div style="display:flex;justify-content:flex-start;padding:0 8px;">
+            <div style="width:58px;height:58px;background:linear-gradient(135deg,#8B6914,#c9932a,#8B6914);border:2px solid #5a3d15;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(0,0,0,0.55),inset 0 2px 6px rgba(255,200,80,0.2);">
+              <span style="font-size:1.6rem;line-height:1;">📜</span>
+            </div>
+          </div>
+
+          <!-- Player Deck parchment scroll panel -->
+          <div style="flex:1;background:linear-gradient(170deg,#f2dfa8 0%,#e0c47a 50%,#d4b86a 100%);border:3px solid #8a6030;border-radius:12px;overflow:hidden;box-shadow:0 6px 22px rgba(0,0,0,0.45),inset 0 0 24px rgba(0,0,0,0.1);position:relative;">
+            <!-- Top scroll curl -->
+            <div style="position:absolute;top:-4px;left:10px;right:10px;height:10px;background:radial-gradient(ellipse at center,rgba(255,240,180,0.8),transparent);border-radius:50%;pointer-events:none;"></div>
+
+            <!-- Header bar -->
+            <div style="background:linear-gradient(135deg,#3a2010,#5a3820,#3a2010);border-bottom:2px solid #7a5020;padding:7px 12px;text-align:center;">
+              <span style="font-family:'Cinzel',Georgia,serif;font-size:0.68rem;font-weight:700;color:#f0d898;letter-spacing:0.20em;text-transform:uppercase;text-shadow:0 1px 4px rgba(0,0,0,0.6);">Player Deck</span>
+            </div>
+
+            <!-- Content -->
+            <div style="padding:12px 14px 16px;">
+              <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.72rem;color:#5a3010;font-style:italic;margin-bottom:12px;">No Deck Selected</div>
+
+              <!-- Guild Roster selector -->
+              <div>
+                <div style="font-family:'Cinzel',Georgia,serif;font-size:0.52rem;font-weight:700;color:#7a4820;text-transform:uppercase;letter-spacing:0.18em;margin-bottom:5px;">⚔ Guild Roster</div>
+                <select id="duelistFilter"
+                  style="width:100%;background:linear-gradient(145deg,#f8eac8,#e8cf80);border:2px solid #9a7030;border-radius:7px;padding:5px 8px;font-family:'Noto Serif',Georgia,serif;font-size:0.7rem;color:#3b1f00;outline:none;cursor:pointer;box-shadow:inset 0 2px 4px rgba(0,0,0,0.12);">
+                  <option value="" disabled selected style="color:#8a6030;font-style:italic;">— Please select —</option>
+                  ${duelists.map(d => `<option value="${d}" style="color:#3b1f00;">${d}</option>`).join('')}
+                </select>
+              </div>
+
+              <!-- Scroll ruled lines decoration -->
+              <div style="margin-top:14px;display:flex;flex-direction:column;gap:9px;">
+                ${Array.from({length: 5}).map(() => `
+                  <div style="height:1.5px;background:linear-gradient(to right,transparent,rgba(90,48,16,0.25),transparent);border-radius:1px;"></div>
+                `).join('')}
+              </div>
+            </div>
+
+            <!-- Bottom scroll curl -->
+            <div style="position:absolute;bottom:-4px;left:10px;right:10px;height:10px;background:radial-gradient(ellipse at center,rgba(180,130,40,0.4),transparent);border-radius:50%;pointer-events:none;"></div>
+          </div>
+
+          <!-- Decorative bottom flourish -->
+          <div style="text-align:left;padding-left:10px;opacity:0.35;">
+            <div style="font-size:2.2rem;color:#8a6a30;line-height:1;transform:scaleX(-1);display:inline-block;">❧</div>
+          </div>
+        </div>
+
+        <!-- CENTER: Glowing face-down card back -->
+        <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+          <div style="position:relative;width:150px;height:210px;">
+            <!-- Outer ambient glow -->
+            <div style="position:absolute;inset:-20px;border-radius:24px;background:radial-gradient(ellipse at center,rgba(180,140,30,0.28) 0%,transparent 65%);animation:pulse-legendary 2.5s ease-in-out infinite;pointer-events:none;"></div>
+            <!-- Card body -->
+            <div style="position:relative;width:100%;height:100%;background:linear-gradient(150deg,#1c1508,#2e2210,#1c1508);border:3px solid #9a7828;border-radius:14px;display:flex;align-items:center;justify-content:center;box-shadow:0 0 36px rgba(180,140,30,0.28),0 10px 30px rgba(0,0,0,0.65),inset 0 0 24px rgba(0,0,0,0.5);">
+              <!-- Inner decorative border -->
+              <div style="position:absolute;inset:7px;border:2px solid rgba(180,140,40,0.35);border-radius:9px;pointer-events:none;"></div>
+              <!-- Millennium Puzzle symbol: triangle with eye -->
+              <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <!-- Outer triangle (CSS clip-path) -->
+                <div style="position:relative;width:72px;height:72px;display:flex;align-items:center;justify-content:center;">
+                  <!-- Triangle background -->
+                  <svg width="72" height="72" viewBox="0 0 72 72" style="position:absolute;top:0;left:0;filter:drop-shadow(0 0 10px rgba(180,140,30,0.5));">
+                    <!-- Outer gold triangle (point DOWN) -->
+                    <polygon points="4,8 68,8 36,68" fill="url(#goldGrad)" stroke="rgba(220,180,60,0.8)" stroke-width="2"/>
+                    <!-- Inner dark cutout -->
+                    <polygon points="12,14 60,14 36,56" fill="#1a1206"/>
+                    <!-- Top-left puzzle piece -->
+                    <polygon points="16,14 34,14 24,32" fill="url(#goldGrad2)"/>
+                    <!-- Top-right puzzle piece -->
+                    <polygon points="38,14 56,14 48,32" fill="url(#goldGrad2)"/>
+                    <!-- Bottom piece -->
+                    <polygon points="26,44 46,44 36,62" fill="url(#goldGrad2)"/>
+                    <!-- Center ring for eye -->
+                    <circle cx="36" cy="28" r="10" fill="#1a1206" stroke="rgba(200,160,40,0.6)" stroke-width="1.5"/>
+                    <!-- Eye iris -->
+                    <ellipse cx="36" cy="28" rx="5" ry="4" fill="rgba(200,160,40,0.7)"/>
+                    <!-- Eye pupil -->
+                    <circle cx="36" cy="28" r="2" fill="#1a1206"/>
+                    <!-- Eye highlight -->
+                    <circle cx="38" cy="26" r="1" fill="rgba(255,230,120,0.6)"/>
+                    <defs>
+                      <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#c9932a"/>
+                        <stop offset="50%" style="stop-color:#e8b840"/>
+                        <stop offset="100%" style="stop-color:#8B6914"/>
+                      </linearGradient>
+                      <linearGradient id="goldGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" style="stop-color:#d4a030"/>
+                        <stop offset="100%" style="stop-color:#9a7020"/>
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RIGHT: WANTED poster -->
+        <div style="width:270px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:4px 0;">
+          <div style="position:relative;background:linear-gradient(165deg,#f8edc0 0%,#edd998 40%,#f2e0a0 70%,#e4cc80 100%);border:3px solid #9a7030;border-radius:6px;padding:26px 24px 30px;box-shadow:0 10px 32px rgba(0,0,0,0.6),inset 0 0 40px rgba(0,0,0,0.07);width:100%;max-width:250px;">
+
+            <!-- Corner bolt screws (4 corners) -->
+            ${['top:7px;left:7px','top:7px;right:7px','bottom:7px;left:7px','bottom:7px;right:7px'].map(() => `
+              <div style="position:absolute;${['top:7px;left:7px','top:7px;right:7px','bottom:7px;left:7px','bottom:7px;right:7px'][0]};width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#c8950a,#6a3c0c);border:1.5px solid #3d2008;box-shadow:0 2px 4px rgba(0,0,0,0.55);"></div>
+            `).join('')}
+            <div style="position:absolute;top:7px;left:7px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#c8950a,#6a3c0c);border:1.5px solid #3d2008;box-shadow:0 2px 4px rgba(0,0,0,0.55);"></div>
+            <div style="position:absolute;top:7px;right:7px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#c8950a,#6a3c0c);border:1.5px solid #3d2008;box-shadow:0 2px 4px rgba(0,0,0,0.55);"></div>
+            <div style="position:absolute;bottom:7px;left:7px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#c8950a,#6a3c0c);border:1.5px solid #3d2008;box-shadow:0 2px 4px rgba(0,0,0,0.55);"></div>
+            <div style="position:absolute;bottom:7px;right:7px;width:13px;height:13px;border-radius:50%;background:radial-gradient(circle at 38% 35%,#c8950a,#6a3c0c);border:1.5px solid #3d2008;box-shadow:0 2px 4px rgba(0,0,0,0.55);"></div>
+
+            <!-- WANTED heading -->
+            <div style="font-family:'Cinzel',Georgia,serif;font-size:2rem;font-weight:900;color:#1e0a00;text-align:center;letter-spacing:0.06em;line-height:1;margin-bottom:12px;text-shadow:1px 1px 0 rgba(255,255,255,0.25);">WANTED</div>
+
+            <!-- Top rule -->
+            <div style="height:2px;background:linear-gradient(to right,transparent,#7a5018,transparent);margin-bottom:14px;opacity:0.55;"></div>
+
+            <!-- Body italic text -->
+            <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.88rem;color:#3a1800;text-align:center;line-height:1.7;font-style:italic;">
+              Summon your strategy!<br/>
+              Select a Guild Roster<br/>
+              from the scrolls to<br/>
+              unseal your arsenal.
+            </div>
+
+            <!-- Wax seal -->
+            <div style="display:flex;justify-content:center;margin-top:20px;">
+              <div style="position:relative;width:68px;height:68px;">
+                <!-- Ribbon tails -->
+                <div style="position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);display:flex;gap:6px;">
+                  <div style="width:10px;height:16px;background:#8a2010;border-radius:0 0 3px 3px;transform:rotate(-10deg);"></div>
+                  <div style="width:10px;height:16px;background:#8a2010;border-radius:0 0 3px 3px;transform:rotate(10deg);"></div>
+                </div>
+                <!-- Seal disc -->
+                <div style="width:68px;height:68px;border-radius:50%;background:radial-gradient(circle at 38% 32%,#d87840,#8a3018,#5a1a08);border:3px solid #3a1006;box-shadow:0 4px 14px rgba(0,0,0,0.55),inset 0 3px 8px rgba(255,120,40,0.2),inset 0 -3px 6px rgba(0,0,0,0.4);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+                  <div style="font-size:1rem;opacity:0.75;line-height:1;">🏺</div>
+                  <div style="font-family:'Cinzel',Georgia,serif;font-size:0.4rem;font-weight:900;color:rgba(255,220,180,0.92);text-transform:uppercase;letter-spacing:0.14em;">CLOSED</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    `;
+  }
+
+  private createBottomControls(hidePaging = false): string {
     const totalPages = this.getTotalPages();
-    const hasPrev = this.state.currentPage > 0;
-    const hasNext = this.state.currentPage < totalPages - 1;
+    const currentPageDisplay = totalPages === 0 ? 1 : this.state.currentPage + 1;
+    const totalPagesDisplay = totalPages === 0 ? 1 : totalPages;
+    const hasPrev = !hidePaging && this.state.currentPage > 0;
+    const hasNext = !hidePaging && this.state.currentPage < totalPages - 1;
+
+    const dots = Array.from({ length: Math.max(1, totalPages) }, (_, i) => {
+      const active = i === this.state.currentPage || totalPages === 0;
+      return `<div style="width:${active ? '20px' : '9px'};height:9px;border-radius:5px;background:${active ? '#d4af70' : 'rgba(212,175,112,0.3)'};border:1.5px solid rgba(180,130,50,0.5);transition:all 0.25s;flex-shrink:0;"></div>`;
+    }).join('');
+
+    const arrowBtn = (id: string, symbol: string, enabled: boolean) =>
+      `<button id="${id}"
+        style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:2px solid ${enabled ? '#9a6f30' : '#3a2818'};background:linear-gradient(135deg,${enabled ? '#5a3010,#7a4820' : '#1e1208,#2a1a0a'});display:flex;align-items:center;justify-content:center;cursor:${enabled ? 'pointer' : 'default'};opacity:${enabled ? '1' : '0.3'};color:#d4af70;font-size:0.85rem;box-shadow:${enabled ? '0 3px 10px rgba(0,0,0,0.5),inset 0 1px 3px rgba(255,200,80,0.15)' : 'none'};transition:all 0.2s;outline:none;"
+        ${!enabled ? 'disabled' : ''}
+        title="${id === 'prevBtn' ? 'Previous' : 'Next'}"
+      >${symbol}</button>`;
+
+    const pagingSection = hidePaging ? `<div style="flex:1;"></div>` : `
+      <!-- Far-left small arrow -->
+      <button style="flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(120,80,30,0.5);background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:rgba(212,175,112,0.6);font-size:0.65rem;cursor:default;opacity:0.5;outline:none;" disabled>&#9664;</button>
+      ${arrowBtn('prevBtn', '&#9664;', hasPrev)}
+      <!-- Centre: Page X of Y + dots -->
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+        <div style="display:flex;align-items:center;gap:6px;">${dots}</div>
+        <div style="font-family:'Cinzel',Georgia,serif;font-size:0.6rem;font-weight:600;color:rgba(212,175,112,0.8);letter-spacing:0.12em;">
+          Page <span style="color:#f0d898;font-weight:900;">${currentPageDisplay}</span> of <span style="color:#f0d898;font-weight:900;">${totalPagesDisplay}</span>
+        </div>
+      </div>
+      ${arrowBtn('nextBtn', '&#9654;', hasNext)}
+      <!-- Far-right small arrow -->
+      <button style="flex-shrink:0;width:28px;height:28px;border-radius:50%;border:1.5px solid rgba(120,80,30,0.5);background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;color:rgba(212,175,112,0.6);font-size:0.65rem;cursor:default;opacity:0.5;outline:none;" disabled>&#9654;</button>
+    `;
 
     return `
-      <div class="bottom-controls fixed right-6 bottom-6 z-30 flex flex-col items-end gap-3">
-        <div class="flex flex-col gap-3">
-          <button 
-            id="prevBtn" 
-            class="control-button w-12 h-12 bg-white border-4 border-wood-light rounded-full flex items-center justify-center transition-all duration-300 shadow-lg font-bold text-2xl text-wood-dark ${!hasPrev ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:shadow-xl cursor-pointer'}"
-            ${!hasPrev ? 'disabled' : ''}
-            title="Previous"
-          >
-            ←
+      <div style="flex-shrink:0;display:flex;align-items:center;padding:6px 2px 2px;gap:6px;background:linear-gradient(to top,rgba(0,0,0,0.2),transparent);border-top:1px solid rgba(120,80,30,0.3);margin-top:6px;">
+        ${pagingSection}
+        <!-- Coins + quest board + sparkle -->
+        <div style="display:flex;align-items:center;gap:5px;${hidePaging ? '' : 'margin-left:4px;'}flex-shrink:0;">
+          <div style="display:flex;align-items:center;gap:2px;background:rgba(0,0,0,0.45);border:1.5px solid rgba(160,110,40,0.5);border-radius:12px;padding:3px 8px;">
+            <span style="font-size:0.85rem;">🪙</span>
+            <span style="font-size:0.62rem;color:#d4af70;font-weight:700;">${this.state.goldAmount ?? 0}</span>
+          </div>
+          <button id="goToQuestBoard"
+            title="Quest Board"
+            style="background:linear-gradient(135deg,#3d2510,#5a3820);border:2px solid #c9932a;border-radius:8px;padding:4px 9px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.45),inset 0 1px 3px rgba(255,200,80,0.15);transition:all 0.2s;outline:none;"
+            onmouseover="this.style.background='linear-gradient(135deg,#5a3820,#7a4e28)';this.style.borderColor='#f0d898';"
+            onmouseout="this.style.background='linear-gradient(135deg,#3d2510,#5a3820)';this.style.borderColor='#c9932a';">
+            <span style="font-size:0.8rem;">🏠</span>
           </button>
-          <button 
-            id="nextBtn" 
-            class="control-button w-12 h-12 bg-white border-4 border-wood-light rounded-full flex items-center justify-center transition-all duration-300 shadow-lg font-bold text-2xl text-wood-dark ${!hasNext ? 'opacity-50 cursor-not-allowed' : 'hover:scale-110 hover:shadow-xl cursor-pointer'}"
-            ${!hasNext ? 'disabled' : ''}
-            title="Next"
-          >
-            →
-          </button>
+          <div style="background:rgba(0,0,0,0.4);border:1.5px solid rgba(160,110,40,0.4);border-radius:8px;padding:4px 7px;cursor:pointer;">
+            <span style="font-size:0.8rem;">✨</span>
+          </div>
         </div>
       </div>
     `;
@@ -408,25 +608,32 @@ export class CardGallery {
   render(): void {
     if (this.state.page === 'gallery') {
       this.appElement.innerHTML = `
-        <div class="gallery-container w-full max-w-6xl wood-texture rounded-[30px] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] border-8 border-wood-dark mx-auto">
+        <div class="gallery-container w-full max-w-6xl mx-auto p-4" style="display:flex;flex-direction:column;height:calc(100vh - 2rem);overflow:hidden;">
           ${this.createHeader()}
-          <div class="main-content flex flex-col md:flex-row gap-6">
-            ${this.createSidebar()}
+          <div style="flex:1;min-height:0;display:flex;flex-direction:column;">
             ${this.createCardsGrid()}
           </div>
         </div>
       `;
     } else if (this.state.page === 'modes') {
       this.appElement.innerHTML = `
-        <div class="gallery-container w-full max-w-6xl wood-texture rounded-[30px] p-6 shadow-[0_20px_60px_rgba(0,0,0,0.6)] border-8 border-wood-dark mx-auto">
-          <div class="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
-            <div>
-              <div class="text-4xl font-extrabold text-yellow-200 font-fantasy">Game Modes</div>
-              <div class="text-yellow-100 text-sm mt-2">Manage your mode rules and tournament settings on a separate page.</div>
+        <div class="gallery-container w-full max-w-6xl mx-auto p-4" style="display:flex;flex-direction:column;height:calc(100vh - 2rem);overflow:hidden;">
+          ${this.createHeader()}
+          <div class="quest-board rounded-2xl border-4 border-wood-dark" style="flex:1;min-height:0;overflow-y:auto;padding:16px;margin-top:0;">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+              <div>
+                <div style="font-family:'Cinzel',Georgia,serif;font-size:1.4rem;font-weight:900;color:#f0d898;letter-spacing:0.1em;">Game Modes</div>
+                <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.75rem;color:rgba(240,216,152,0.75);margin-top:4px;">Manage your mode rules and tournament settings.</div>
+              </div>
+              <button id="backToGallery"
+                style="background:linear-gradient(135deg,#5a3010,#7a4820);border:2px solid #c9932a;border-radius:10px;padding:8px 16px;cursor:pointer;color:#f0d898;font-family:'Cinzel',Georgia,serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,0.45);outline:none;"
+                onmouseover="this.style.background='linear-gradient(135deg,#7a4820,#9a5e28)';"
+                onmouseout="this.style.background='linear-gradient(135deg,#5a3010,#7a4820)';">
+                ⚔ Quest Board
+              </button>
             </div>
-            <button id="backToGallery" class="text-yellow-950 bg-yellow-300 hover:bg-yellow-400 font-bold rounded-2xl px-5 py-3 shadow-lg transition">← Back to Gallery</button>
+            ${this.modeController.renderModePanel(this.state.modes, this.state.currentModeId, this.state.editingModeId, this.state.isDeveloper)}
           </div>
-          ${this.modeController.renderModePanel(this.state.modes, this.state.currentModeId, this.state.editingModeId, this.state.isDeveloper)}
         </div>
       `;
     } else if (this.state.page === 'decklist' && this.state.selectedCard) {
@@ -440,14 +647,12 @@ export class CardGallery {
     if (duelistFilter) {
       duelistFilter.addEventListener('change', (e) => {
         const value = (e.target as HTMLSelectElement).value;
+        if (!value) return; // ignore the "Please select" placeholder
         this.state.currentDuelist = value;
         this.state.currentPage = 0;
-        if (value && value !== 'All') {
-          const filtered = this.state.cards.filter(card => card.duelist === value);
-          this.state.displayCards = this.shuffleCards(filtered);
-        } else {
-          this.state.displayCards = this.state.cards;
-        }
+        this.state.noDeckSelected = false;
+        const filtered = this.state.cards.filter(card => card.duelist === value);
+        this.state.displayCards = this.shuffleCards(filtered);
         this.render();
         this.attachEventListeners();
       });
@@ -511,12 +716,37 @@ export class CardGallery {
     const backBtn = this.appElement.querySelector('#backToGallery');
     backBtn?.addEventListener('click', () => this.handleBackToGallery());
 
+    
+
+    const decklistSelect = this.appElement.querySelector('#decklistSelect') as HTMLSelectElement | null;
+    if (decklistSelect) {
+      decklistSelect.addEventListener('change', (e) => {
+        const selectedId = parseInt((e.target as HTMLSelectElement).value, 10);
+        if (!Number.isNaN(selectedId)) {
+          this.state.selectedDecklistId = selectedId;
+          this.render();
+          this.attachEventListeners();
+        }
+      });
+    }
+
     // Pagination buttons
     const prevBtn = this.appElement.querySelector('#prevBtn');
     const nextBtn = this.appElement.querySelector('#nextBtn');
 
     prevBtn?.addEventListener('click', () => this.previousPage());
     nextBtn?.addEventListener('click', () => this.nextPage());
+
+    // Quest Board button - return to empty/welcome state
+    const questBoardBtn = this.appElement.querySelector('#goToQuestBoard');
+    questBoardBtn?.addEventListener('click', () => {
+      this.state.noDeckSelected = true;
+      this.state.currentDuelist = '';
+      this.state.displayCards = this.state.cards;
+      this.state.currentPage = 0;
+      this.render();
+      this.attachEventListeners();
+    });
   }
 
   // changeFilter removed, no filtering
@@ -524,7 +754,9 @@ export class CardGallery {
   private handleCardClick(cardId: number): void {
     const card = this.state.cards.find(c => c.id === cardId);
     if (card) {
+      const matches = this.getDecklistsForCard(card);
       this.state.selectedCard = card;
+      this.state.selectedDecklistId = matches[0]?.id;
       this.state.page = 'decklist';
       this.render();
       this.attachEventListeners();
@@ -538,39 +770,78 @@ export class CardGallery {
     this.attachEventListeners();
   }
 
-  private getRandomDecklist(card: Card): Decklist | undefined {
-    const matches = decklistsData.filter((d: Decklist) => d.cardName === card.name && d.duelist === card.duelist);
+  private getDecklistsForCard(card: Card): Decklist[] {
+    return decklistsData.filter((d: Decklist) => d.cardName === card.name && d.duelist === card.duelist);
+  }
+
+  private getSelectedDecklist(card: Card): Decklist | undefined {
+    const matches = this.getDecklistsForCard(card);
     if (matches.length === 0) {
       return undefined;
     }
-    if (matches.length === 1) {
-      return matches[0];
+
+    if (this.state.selectedDecklistId) {
+      const selected = matches.find(d => d.id === this.state.selectedDecklistId);
+      if (selected) {
+        return selected;
+      }
     }
-    const randomIndex = Math.floor(Math.random() * matches.length);
-    return matches[randomIndex];
+
+    return matches[0];
   }
 
   private createDecklistPage(card: Card): string {
-    const decklist = this.getRandomDecklist(card);
+    const decklists = this.getDecklistsForCard(card);
+    const decklist = this.getSelectedDecklist(card);
     return `
-      <div class="gallery-container w-full max-w-6xl parchment-gradient rounded-[36px] p-10 shadow-[0_20px_80px_rgba(0,0,0,0.7)] border-8 border-yellow-900 mx-auto flex flex-col items-center relative overflow-hidden">
-        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/old-mathematics.png')] opacity-10 pointer-events-none"></div>
-        <button id="backToGallery" class="mb-8 px-8 py-3 bg-yellow-800 hover:bg-yellow-900 text-yellow-100 font-extrabold rounded-xl shadow-2xl border-2 border-yellow-400 transition text-xl z-10">← Back to Gallery</button>
-        <div class="flex flex-col items-center gap-6 w-full z-10">
-          <div title="${card.name}" class="text-4xl md:text-5xl font-fantasy font-extrabold text-yellow-900 drop-shadow-[0_2px_12px_rgba(0,0,0,0.7)] tracking-wider text-center mb-2 break-words whitespace-normal leading-tight w-full max-w-full min-h-[5rem]">${card.name}</div>
-          <div class="text-2xl font-fantasy font-bold text-yellow-700 mb-4">Duelist: <span class="text-yellow-900">${card.duelist}</span></div>
-          <div class="flex flex-wrap gap-10 justify-center w-full">
-            ${!decklist ? `<div class='text-yellow-900 text-2xl font-fantasy'>No decklist found for this deck.</div>` : `
-                <div class="decklist-card bg-gradient-to-br from-yellow-100 via-yellow-200 to-yellow-100 rounded-2xl border-2 border-yellow-600 shadow-lg p-2 flex flex-col items-center w-full max-w-2xl mx-auto aspect-[4/3] relative">
-                  <div class="font-extrabold text-yellow-900 text-2xl mb-2 font-fantasy text-center drop-shadow">${decklist.title}</div>
-                  <div class="flex-1 flex items-center justify-center w-full h-full">
-                    <div class="relative flex items-center justify-center w-full h-full bg-gradient-to-br from-yellow-200 via-yellow-100 to-yellow-300 rounded-xl border-2 border-yellow-400 shadow-md overflow-hidden aspect-[4/3]">
-                      <img src="${decklist.image.startsWith('/') ? '.' + decklist.image : decklist.image}" alt="${decklist.title}" class="relative z-10 rounded-xl shadow-lg border border-yellow-500 bg-white object-contain w-full h-full max-w-full max-h-full" style="image-rendering:auto;" />
-                    </div>
-                  </div>
-                </div>
-              `}
+      <div class="gallery-container w-full max-w-6xl mx-auto" style="display:flex;flex-direction:column;height:calc(100vh - 2rem);overflow:hidden;padding:1rem;">
+
+        <!-- Header bar matching gallery style -->
+        <div style="flex-shrink:0;background:linear-gradient(135deg,#2a1a0a,#3d2510,#2a1a0a);border:4px solid #6b4a28;border-radius:16px;padding:12px 20px;margin-bottom:12px;display:flex;align-items:center;gap:16px;box-shadow:0 6px 20px rgba(0,0,0,0.5);">
+          <!-- Back button -->
+          <button id="backToGallery"
+            style="flex-shrink:0;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#5a3010,#7a4820);border:2px solid #c9932a;border-radius:10px;padding:8px 16px;cursor:pointer;color:#f0d898;font-family:'Cinzel',Georgia,serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,0.45),inset 0 1px 3px rgba(255,200,80,0.15);transition:all 0.2s;"
+            onmouseover="this.style.background='linear-gradient(135deg,#7a4820,#9a5e28)';this.style.borderColor='#f0d898';"
+            onmouseout="this.style.background='linear-gradient(135deg,#5a3010,#7a4820)';this.style.borderColor='#c9932a';">
+            <span style="font-size:1rem;">⚔</span>
+            <span>Quest Board</span>
+          </button>
+
+          <!-- Title -->
+          <div style="flex:1;text-align:center;">
+            <div style="font-family:'Cinzel',Georgia,serif;font-size:clamp(1rem,2vw,1.5rem);font-weight:900;color:#f0d898;letter-spacing:0.10em;text-shadow:0 2px 8px rgba(0,0,0,0.8);">${card.name}</div>
+            <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.65rem;color:rgba(240,216,152,0.75);letter-spacing:0.18em;text-transform:uppercase;margin-top:3px;">Duelist: ${card.duelist}</div>
           </div>
+
+          <!-- Deck selector (if multiple) -->
+          ${decklists.length > 1 ? `
+            <div style="flex-shrink:0;display:flex;align-items:center;gap:8px;">
+              <span style="font-family:'Cinzel',Georgia,serif;font-size:0.58rem;font-weight:700;color:#c9aa71;text-transform:uppercase;letter-spacing:0.15em;white-space:nowrap;">Deck</span>
+              <select id="decklistSelect"
+                style="background:linear-gradient(135deg,#2a1a06,#3d2810);color:#f0d898;border:2px solid #7a5a28;border-radius:8px;padding:5px 10px;font-family:'Cinzel',Georgia,serif;font-size:0.65rem;cursor:pointer;outline:none;box-shadow:0 2px 6px rgba(0,0,0,0.4);">
+                ${decklists.map(deck => `<option value="${deck.id}" style="background:#2a1a06;color:#f0d898;" ${deck.id === decklist?.id ? 'selected' : ''}>${deck.title}</option>`).join('')}
+              </select>
+            </div>
+          ` : ''}
+        </div>
+
+        <!-- Decklist content area -->
+        <div style="flex:1;min-height:0;background:linear-gradient(145deg,#1a1208,#251a0c);border:4px solid #6b4a28;border-radius:16px;display:flex;align-items:center;justify-content:center;padding:16px;box-shadow:inset 0 0 30px rgba(0,0,0,0.4);">
+          ${!decklist ? `
+            <div style="font-family:'Cinzel',Georgia,serif;font-size:1.2rem;color:#c9aa71;text-align:center;opacity:0.7;">
+              <div style="font-size:2rem;margin-bottom:8px;">📜</div>
+              No decklist found for this card.
+            </div>
+          ` : `
+            <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;gap:10px;">
+              <div style="font-family:'Cinzel',Georgia,serif;font-size:1rem;font-weight:700;color:#f0d898;letter-spacing:0.1em;text-shadow:0 2px 6px rgba(0,0,0,0.6);">${decklist.title}</div>
+              <div style="flex:1;min-height:0;width:100%;max-width:900px;background:linear-gradient(145deg,#f2dfa8,#e0c47a,#d4b86a);border:3px solid #8a6030;border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.5);">
+                <img src="${decklist.image.startsWith('/') ? '.' + decklist.image : decklist.image}"
+                  alt="${decklist.title}"
+                  style="width:100%;height:100%;object-fit:contain;display:block;" />
+              </div>
+            </div>
+          `}
         </div>
       </div>
     `;
