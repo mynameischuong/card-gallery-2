@@ -13,7 +13,7 @@
     font-family: 'Noto Serif', 'Cinzel', Georgia, serif;
     margin: 0;
     padding: 0;
-    background: url('/card-gallery-2/style/wood.jpg') center/cover fixed no-repeat;
+    background: url('/style/wood.jpg') center/cover fixed no-repeat;
     color: #f8edd8;
     min-height: 100vh;
     overflow: hidden;
@@ -59,7 +59,7 @@
     right: 0;
     bottom: -5%;
     left: 0;
-    background-image: url('/card-gallery-2/style/paper.png');
+    background-image: url('/style/paper.png');
     background-position: center;
     background-repeat: no-repeat;
     background-size: 100% 110%; /* taller than viewport so it covers, left/right edges stay anchored */
