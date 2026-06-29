@@ -286,13 +286,6 @@ export class CardGallery {
     `;
   }
 
-  // Sidebar removed, return empty string
-  private createSidebar(): string {
-    return '';
-  }
-
-  // Sidebar button creation removed since type is not used
-
   private createCardsGrid(): string {
     const cards = this.getCurrentPageCards();
     const duelists = Array.from(new Set(this.state.cards.map(card => card.duelist)));
