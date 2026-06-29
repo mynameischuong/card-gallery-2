@@ -1,0 +1,27 @@
+[
+  {
+    "id": 1,
+    "name": "BOSS THẾ GIỚI",
+    "rules": "- Thể thức: BO1\n- BOSS sẽ cầm 1 deck randomn khác nhau, người thắng sẽ nhận được 1 pack thưởng. Đánh xong thì về cuối hàng đợi chờ tới lượt đánh tiếp"
+  },
+  {
+    "id": 2,
+    "name": "EXTRA SIDE",
+    "rules": "- Thể thức: B03\n- Extra: 20 card, side: 20 card"
+  },
+  {
+    "id": 3,
+    "name": "XÚC XẮC ĐẢO NGƯỢC",
+    "rules": "- Thể thức: BO3\n- Ai thảy xúc xắc thấp hơn thì đi trước\n- Mỗi người bỏ phiếu kín cho 1 người mình nghĩ là sẽ top 1, pack sẽ chia đều cho top 1 và những người đoán trúng"
+  },
+  {
+    "id": 4,
+    "name": "ĐẤU TRƯỜNG NGUYÊN TỐ",
+    "rules": "- Thể thức: BO3\n- Mọi người sẽ được phát 1 thẻ bài ngẫu nhiên và mỗi thẻ sẽ có hiệu ứng riêng của nó. Hiệu ứng sẽ áp dụng cho cả trận đấu, hết 1 round thì sẽ thu về để phân phát lại.\n- Người thắng có quyền đổi thẻ của mình với người khác hoặc đổi 1 thẻ ngẫu nhiên sau lượt bốc thẻ."
+  },
+  {
+    "id": 5,
+    "name": "TẠP GIỚI CHUYỂN SINH",
+    "rules": "- Thể thức: BO3\n- Có 1 pool card ban riêng do BTC chuẩn bị. Player sử dung số card ban bằng cách đổ 2 xúc xắc. Chênh lệch giữa 2 xúc xắc là số card được sử dụng.\n- Lưu ý: card ban phải được bỏ vào main và extra deck (không được side ra)"
+  }
+]
