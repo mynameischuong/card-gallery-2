@@ -143,14 +143,20 @@ export class CardGallery {
       noDeckSelected: true,
     };
     
+    const getCardsPerPage = () => window.innerWidth < 640 ? 6 : 12;
+
     window.addEventListener('resize', () => {
-      if (this.state.cardsPerPage !== 12) {
-        this.state.cardsPerPage = 12;
+      const desired = getCardsPerPage();
+      if (this.state.cardsPerPage !== desired) {
+        this.state.cardsPerPage = desired;
         this.state.currentPage = 0;
         this.render();
         this.attachEventListeners();
       }
     });
+
+    // Set correct value on init
+    this.state.cardsPerPage = getCardsPerPage();
   }
 
   private async loadModesFromJson(): Promise<GameMode[] | null> {
@@ -243,7 +249,8 @@ export class CardGallery {
         <div style="position:absolute;bottom:6px;left:8px;width:20px;height:20px;border-bottom:2px solid rgba(200,160,60,0.7);border-left:2px solid rgba(200,160,60,0.7);border-radius:0 0 0 3px;pointer-events:none;z-index:2;"></div>
         <div style="position:absolute;bottom:6px;right:8px;width:20px;height:20px;border-bottom:2px solid rgba(200,160,60,0.7);border-right:2px solid rgba(200,160,60,0.7);border-radius:0 0 3px 0;pointer-events:none;z-index:2;"></div>
 
-        <div style="position:relative;display:flex;align-items:center;padding:10px 20px;gap:16px;min-height:80px;">
+        <!-- Desktop layout (≥640px): single row with icon in centre -->
+        <div class="header-desktop" style="position:relative;display:${window.innerWidth >= 640 ? 'flex' : 'none'};align-items:center;padding:10px 20px;gap:16px;min-height:80px;">
 
           <!-- LEFT: Title -->
           <div style="flex:1;display:flex;flex-direction:column;justify-content:center;">
@@ -252,7 +259,7 @@ export class CardGallery {
             <div style="margin-top:5px;height:1px;width:70%;background:linear-gradient(to right,rgba(180,130,40,0.6),transparent);"></div>
           </div>
 
-          <!-- CENTER: icon.png shield emblem - overflows header vertically -->
+          <!-- CENTER: icon.png shield emblem -->
           <div style="flex-shrink:0;display:flex;align-items:center;justify-content:center;overflow:visible;margin:-16px 0;">
             <img src="./style/icon.png" alt="Emblem"
               style="width:120px;height:120px;object-fit:contain;mix-blend-mode:lighten;filter:drop-shadow(0 4px 16px rgba(0,0,0,0.8));position:relative;z-index:10;"/>
@@ -260,14 +267,10 @@ export class CardGallery {
 
           <!-- RIGHT: DECKS counter + TACTICIAN button -->
           <div style="flex:1;display:flex;align-items:center;justify-content:flex-end;gap:10px;">
-
-            <!-- DECKS box -->
             <div style="background:linear-gradient(145deg,#1a0e04,#2e1c08);border:2px solid #8a6828;border-radius:10px;padding:6px 14px 8px;text-align:center;min-width:80px;box-shadow:0 4px 14px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,200,80,0.1);">
               <div style="font-family:'Cinzel',Georgia,serif;font-size:0.5rem;font-weight:700;color:#a88840;text-transform:uppercase;letter-spacing:0.28em;margin-bottom:2px;">Decks</div>
               <div style="font-family:'Cinzel',Georgia,serif;font-size:2rem;font-weight:900;color:#f0d898;line-height:1;text-shadow:0 2px 8px rgba(0,0,0,0.7);">${totalDecks}</div>
             </div>
-
-            <!-- TACTICIAN'S VIEW button -->
             <button id="openModePageBtn"
               style="background:linear-gradient(145deg,#1a0e04,#2e1c08);border:2px solid #8a6828;border-radius:10px;padding:8px 14px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:5px;box-shadow:0 4px 14px rgba(0,0,0,0.55),inset 0 1px 0 rgba(255,200,80,0.1);transition:all 0.2s;outline:none;min-width:80px;"
               onmouseover="this.style.background='linear-gradient(145deg,#2e1c08,#4a2c10)';this.style.borderColor='#c9932a';"
@@ -279,7 +282,35 @@ export class CardGallery {
               </div>
               <div style="font-family:'Cinzel',Georgia,serif;font-size:0.48rem;font-weight:700;color:#a88840;text-transform:uppercase;letter-spacing:0.13em;white-space:nowrap;">Tactician's View</div>
             </button>
+          </div>
+        </div>
 
+        <!-- Mobile layout (<640px): compact two-row header -->
+        <div class="header-mobile" style="position:relative;display:${window.innerWidth < 640 ? 'flex' : 'none'};flex-direction:column;padding:8px 12px 6px;gap:6px;">
+          <!-- Row 1: title left, decks+tactician right -->
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;">
+            <div style="display:flex;flex-direction:column;justify-content:center;min-width:0;">
+              <div style="font-family:'Cinzel',Georgia,serif;font-size:1.05rem;font-weight:900;color:#f0d898;letter-spacing:0.08em;line-height:1;text-shadow:0 2px 6px rgba(0,0,0,0.8);">CARD GALLERY</div>
+              <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.48rem;color:rgba(200,165,80,0.8);letter-spacing:0.16em;text-transform:uppercase;margin-top:3px;">Quest Board</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+              <!-- Decks badge -->
+              <div style="background:linear-gradient(145deg,#1a0e04,#2e1c08);border:2px solid #8a6828;border-radius:8px;padding:3px 10px 4px;text-align:center;box-shadow:0 3px 10px rgba(0,0,0,0.55);">
+                <div style="font-family:'Cinzel',Georgia,serif;font-size:0.42rem;font-weight:700;color:#a88840;text-transform:uppercase;letter-spacing:0.2em;">Decks</div>
+                <div style="font-family:'Cinzel',Georgia,serif;font-size:1.3rem;font-weight:900;color:#f0d898;line-height:1;text-shadow:0 1px 6px rgba(0,0,0,0.7);">${totalDecks}</div>
+              </div>
+              <!-- Tactician icon-only button -->
+              <button id="openModePageBtn"
+                style="background:linear-gradient(145deg,#1a0e04,#2e1c08);border:2px solid #8a6828;border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;box-shadow:0 3px 10px rgba(0,0,0,0.55);outline:none;touch-action:manipulation;"
+                title="Tactician's View">
+                <div style="position:relative;width:24px;height:24px;display:flex;align-items:center;justify-content:center;">
+                  <div style="position:absolute;width:20px;height:2px;background:linear-gradient(to right,#8a6828,#d4a84a,#8a6828);border-radius:2px;transform:rotate(45deg);"></div>
+                  <div style="position:absolute;width:20px;height:2px;background:linear-gradient(to right,#8a6828,#d4a84a,#8a6828);border-radius:2px;transform:rotate(-45deg);"></div>
+                  <div style="width:9px;height:9px;border-radius:50%;background:linear-gradient(135deg,#c9932a,#8B6914);border:1.5px solid #5a3d15;position:relative;z-index:1;"></div>
+                </div>
+                <div style="font-family:'Cinzel',Georgia,serif;font-size:0.38rem;font-weight:700;color:#a88840;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;">Modes</div>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -311,8 +342,8 @@ export class CardGallery {
             ${duelists.map(d => `<option value="${d}" style="background:#2a1a06;color:#f0d898;" ${d === this.state.currentDuelist ? 'selected' : ''}>${d}</option>`).join('')}
           </select>
         </div>
-        <!-- Cards grid: 6 columns × 2 rows, fills available space -->
-        <div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));grid-template-rows:repeat(2,1fr);gap:8px;flex:1;min-height:0;">
+        <!-- Cards grid: 2 cols mobile / 6 cols desktop -->
+        <div class="cards-grid" style="display:grid;grid-template-columns:repeat(${window.innerWidth < 640 ? 2 : 6},minmax(0,1fr));gap:8px;${window.innerWidth >= 640 ? 'flex:1;min-height:0;align-content:stretch;' : 'align-content:start;'}">
           ${cards.map(card => this.createCard(card)).join('')}
         </div>
         <!-- Bottom nav bar: always visible, never clipped -->
@@ -339,14 +370,15 @@ export class CardGallery {
       return 'linear-gradient(135deg,#2a7a3a,#389448)'; // rogue
     })();
 
+    const isMobile = window.innerWidth < 640;
     return `
       <div 
         class="card cursor-pointer transition-transform duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:z-10 ${glowClass}"
         data-card-id="${card.id}"
-        style="display:flex;flex-direction:column;height:100%;border-radius:12px;border:3px solid #7a5a2a;background:#1a1008;box-shadow:0 4px 16px rgba(0,0,0,0.55);overflow:hidden;"
+        style="display:flex;flex-direction:column;${isMobile ? '' : 'height:220px;'}border-radius:12px;border:3px solid #7a5a2a;background:#1a1008;box-shadow:0 4px 16px rgba(0,0,0,0.55);overflow:hidden;"
       >
         <!-- Image area -->
-        <div style="position:relative;flex:1;min-height:0;overflow:hidden;background:linear-gradient(160deg,#2c1d0e,#1a1008);">
+        <div style="position:relative;${isMobile ? 'height:140px;' : 'flex:1;min-height:160px;'}overflow:hidden;background:linear-gradient(160deg,#2c1d0e,#1a1008);">
 
           <!-- Level badge – top-left gold circle -->
           <div style="position:absolute;top:5px;left:5px;z-index:20;width:26px;height:26px;background:linear-gradient(135deg,#c9932a,#8B6914);border:2px solid #3d2510;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Cinzel',Georgia,serif;font-size:0.72rem;font-weight:900;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.6);">
@@ -384,10 +416,10 @@ export class CardGallery {
   private createEmptyState(): string {
     const duelists = Array.from(new Set(this.state.cards.map(card => card.duelist)));
     return `
-      <div style="display:flex;flex:1;min-height:0;gap:16px;padding:6px 4px;">
+      <div style="display:flex;flex:1;min-height:0;gap:16px;padding:6px 4px;flex-wrap:wrap;">
 
         <!-- LEFT SIDEBAR: scroll icon + player deck panel with guild selector -->
-        <div style="width:190px;flex-shrink:0;display:flex;flex-direction:column;gap:8px;">
+        <div class="empty-sidebar" style="width:${window.innerWidth < 640 ? '100%' : '190px'};flex-shrink:0;display:flex;flex-direction:column;gap:8px;${window.innerWidth < 640 ? 'flex:1 1 100%;' : 'flex:0 0 190px;'}">
 
           <!-- Decorative icon -->
           <div style="display:flex;justify-content:flex-start;padding:0 8px;">
@@ -438,8 +470,8 @@ export class CardGallery {
           </div>
         </div>
 
-        <!-- CENTER: Glowing face-down card back -->
-        <div style="flex:1;display:flex;align-items:center;justify-content:center;">
+        <!-- CENTER: Glowing face-down card back (hidden on mobile) -->
+        <div class="empty-center" style="flex:1;display:${window.innerWidth < 640 ? 'none' : 'flex'};align-items:center;justify-content:center;">
           <div style="position:relative;width:150px;height:210px;">
             <!-- Outer ambient glow -->
             <div style="position:absolute;inset:-20px;border-radius:24px;background:radial-gradient(ellipse at center,rgba(180,140,30,0.28) 0%,transparent 65%);animation:pulse-legendary 2.5s ease-in-out infinite;pointer-events:none;"></div>
@@ -490,7 +522,7 @@ export class CardGallery {
         </div>
 
         <!-- RIGHT: WANTED poster -->
-        <div style="width:270px;flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:4px 0;">
+        <div class="empty-wanted" style="width:${window.innerWidth < 640 ? '100%' : '270px'};flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:4px 0;${window.innerWidth < 640 ? 'flex:1 1 100%;' : 'flex:0 0 270px;'}max-width:100%;">
           <div style="position:relative;background:linear-gradient(165deg,#f8edc0 0%,#edd998 40%,#f2e0a0 70%,#e4cc80 100%);border:3px solid #9a7030;border-radius:6px;padding:26px 24px 30px;box-shadow:0 10px 32px rgba(0,0,0,0.6),inset 0 0 40px rgba(0,0,0,0.07);width:100%;max-width:250px;">
 
             <!-- Corner bolt screws (4 corners) -->
@@ -553,7 +585,7 @@ export class CardGallery {
 
     const arrowBtn = (id: string, symbol: string, enabled: boolean) =>
       `<button id="${id}"
-        style="flex-shrink:0;width:36px;height:36px;border-radius:50%;border:2px solid ${enabled ? '#9a6f30' : '#3a2818'};background:linear-gradient(135deg,${enabled ? '#5a3010,#7a4820' : '#1e1208,#2a1a0a'});display:flex;align-items:center;justify-content:center;cursor:${enabled ? 'pointer' : 'default'};opacity:${enabled ? '1' : '0.3'};color:#d4af70;font-size:0.85rem;box-shadow:${enabled ? '0 3px 10px rgba(0,0,0,0.5),inset 0 1px 3px rgba(255,200,80,0.15)' : 'none'};transition:all 0.2s;outline:none;"
+        style="flex-shrink:0;width:40px;height:40px;border-radius:50%;border:2px solid ${enabled ? '#9a6f30' : '#3a2818'};background:linear-gradient(135deg,${enabled ? '#5a3010,#7a4820' : '#1e1208,#2a1a0a'});display:flex;align-items:center;justify-content:center;cursor:${enabled ? 'pointer' : 'default'};opacity:${enabled ? '1' : '0.3'};color:#d4af70;font-size:0.85rem;box-shadow:${enabled ? '0 3px 10px rgba(0,0,0,0.5),inset 0 1px 3px rgba(255,200,80,0.15)' : 'none'};transition:all 0.2s;outline:none;touch-action:manipulation;"
         ${!enabled ? 'disabled' : ''}
         title="${id === 'prevBtn' ? 'Previous' : 'Next'}"
       >${symbol}</button>`;
@@ -575,23 +607,23 @@ export class CardGallery {
     `;
 
     return `
-      <div style="flex-shrink:0;display:flex;align-items:center;padding:6px 2px 2px;gap:6px;background:linear-gradient(to top,rgba(0,0,0,0.2),transparent);border-top:1px solid rgba(120,80,30,0.3);margin-top:6px;">
+      <div class="bottom-controls" style="flex-shrink:0;display:flex;flex-wrap:wrap;align-items:center;padding:6px 2px 2px;gap:6px;background:linear-gradient(to top,rgba(0,0,0,0.2),transparent);border-top:1px solid rgba(120,80,30,0.3);margin-top:6px;">
         ${pagingSection}
         <!-- Coins + quest board + sparkle -->
         <div style="display:flex;align-items:center;gap:5px;${hidePaging ? '' : 'margin-left:4px;'}flex-shrink:0;">
-          <div style="display:flex;align-items:center;gap:2px;background:rgba(0,0,0,0.45);border:1.5px solid rgba(160,110,40,0.5);border-radius:12px;padding:3px 8px;">
-            <span style="font-size:0.85rem;">🪙</span>
-            <span style="font-size:0.62rem;color:#d4af70;font-weight:700;">${this.state.goldAmount ?? 0}</span>
+          <div style="display:flex;align-items:center;gap:2px;background:rgba(0,0,0,0.45);border:1.5px solid rgba(160,110,40,0.5);border-radius:12px;padding:4px 10px;">
+            <span style="font-size:0.95rem;">🪙</span>
+            <span style="font-size:0.65rem;color:#d4af70;font-weight:700;">${this.state.goldAmount ?? 0}</span>
           </div>
           <button id="goToQuestBoard"
             title="Quest Board"
-            style="background:linear-gradient(135deg,#3d2510,#5a3820);border:2px solid #c9932a;border-radius:8px;padding:4px 9px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.45),inset 0 1px 3px rgba(255,200,80,0.15);transition:all 0.2s;outline:none;"
+            style="background:linear-gradient(135deg,#3d2510,#5a3820);border:2px solid #c9932a;border-radius:8px;padding:6px 11px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 8px rgba(0,0,0,0.45),inset 0 1px 3px rgba(255,200,80,0.15);transition:all 0.2s;outline:none;touch-action:manipulation;"
             onmouseover="this.style.background='linear-gradient(135deg,#5a3820,#7a4e28)';this.style.borderColor='#f0d898';"
             onmouseout="this.style.background='linear-gradient(135deg,#3d2510,#5a3820)';this.style.borderColor='#c9932a';">
-            <span style="font-size:0.8rem;">🏠</span>
+            <span style="font-size:0.9rem;">🏠</span>
           </button>
-          <div style="background:rgba(0,0,0,0.4);border:1.5px solid rgba(160,110,40,0.4);border-radius:8px;padding:4px 7px;cursor:pointer;">
-            <span style="font-size:0.8rem;">✨</span>
+          <div style="background:rgba(0,0,0,0.4);border:1.5px solid rgba(160,110,40,0.4);border-radius:8px;padding:5px 9px;cursor:pointer;">
+            <span style="font-size:0.9rem;">✨</span>
           </div>
         </div>
       </div>
@@ -790,10 +822,10 @@ export class CardGallery {
       <div class="gallery-container w-full max-w-6xl mx-auto" style="display:flex;flex-direction:column;height:calc(100vh - 2rem);overflow:hidden;padding:1rem;">
 
         <!-- Header bar matching gallery style -->
-        <div style="flex-shrink:0;background:linear-gradient(135deg,#2a1a0a,#3d2510,#2a1a0a);border:4px solid #6b4a28;border-radius:16px;padding:12px 20px;margin-bottom:12px;display:flex;align-items:center;gap:16px;box-shadow:0 6px 20px rgba(0,0,0,0.5);">
+        <div style="flex-shrink:0;background:linear-gradient(135deg,#2a1a0a,#3d2510,#2a1a0a);border:4px solid #6b4a28;border-radius:16px;padding:10px 14px;margin-bottom:12px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;box-shadow:0 6px 20px rgba(0,0,0,0.5);">
           <!-- Back button -->
           <button id="backToGallery"
-            style="flex-shrink:0;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#5a3010,#7a4820);border:2px solid #c9932a;border-radius:10px;padding:8px 16px;cursor:pointer;color:#f0d898;font-family:'Cinzel',Georgia,serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,0.45),inset 0 1px 3px rgba(255,200,80,0.15);transition:all 0.2s;"
+            style="flex-shrink:0;display:flex;align-items:center;gap:8px;background:linear-gradient(135deg,#5a3010,#7a4820);border:2px solid #c9932a;border-radius:10px;padding:8px 14px;cursor:pointer;color:#f0d898;font-family:'Cinzel',Georgia,serif;font-size:0.72rem;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;box-shadow:0 4px 12px rgba(0,0,0,0.45),inset 0 1px 3px rgba(255,200,80,0.15);transition:all 0.2s;touch-action:manipulation;"
             onmouseover="this.style.background='linear-gradient(135deg,#7a4820,#9a5e28)';this.style.borderColor='#f0d898';"
             onmouseout="this.style.background='linear-gradient(135deg,#5a3010,#7a4820)';this.style.borderColor='#c9932a';">
             <span style="font-size:1rem;">⚔</span>
@@ -801,9 +833,9 @@ export class CardGallery {
           </button>
 
           <!-- Title -->
-          <div style="flex:1;text-align:center;">
-            <div style="font-family:'Cinzel',Georgia,serif;font-size:clamp(1rem,2vw,1.5rem);font-weight:900;color:#f0d898;letter-spacing:0.10em;text-shadow:0 2px 8px rgba(0,0,0,0.8);">${card.name}</div>
-            <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.65rem;color:rgba(240,216,152,0.75);letter-spacing:0.18em;text-transform:uppercase;margin-top:3px;">Duelist: ${card.duelist}</div>
+          <div style="flex:1;text-align:center;min-width:120px;">
+            <div style="font-family:'Cinzel',Georgia,serif;font-size:clamp(0.85rem,3vw,1.5rem);font-weight:900;color:#f0d898;letter-spacing:0.10em;text-shadow:0 2px 8px rgba(0,0,0,0.8);">${card.name}</div>
+            <div style="font-family:'Noto Serif',Georgia,serif;font-size:0.6rem;color:rgba(240,216,152,0.75);letter-spacing:0.18em;text-transform:uppercase;margin-top:3px;">Duelist: ${card.duelist}</div>
           </div>
 
           <!-- Deck selector (if multiple) -->

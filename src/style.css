@@ -171,3 +171,38 @@
       0 6px 30px rgba(0, 0, 0, 0.55);
   }
 }
+
+/* ── Responsive layout ─────────────────────────────────────── */
+
+/* Cards grid default (desktop) — overridden by JS-rendered inline style at runtime */
+.cards-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-rows: repeat(2, 1fr);
+}
+
+@media (max-width: 639px) {
+  body {
+    overflow-y: auto;
+  }
+
+  .gallery-container {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+    padding: 0.5rem !important;
+  }
+
+  .gallery-container::before {
+    background-size: auto 100%;
+  }
+
+  /* Bottom controls: centre on small screens */
+  .bottom-controls {
+    justify-content: center;
+  }
+
+  /* Quest board padding */
+  .quest-board {
+    padding: 8px !important;
+  }
+}
